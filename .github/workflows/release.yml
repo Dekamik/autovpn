@@ -78,7 +78,7 @@ jobs:
 
       # Windows
       - name: Build (Windows)
-        if: ${{ matrix.goos == 'linux' }}
+        if: ${{ matrix.goos == 'windows' }}
         run: env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o autovpn.exe -ldflags="-X 'main.version=${{ github.event.release.tag_name }}'" cmd/main.go
 
       - name: Create archive (Windows)
