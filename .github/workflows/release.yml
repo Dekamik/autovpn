@@ -56,10 +56,11 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Build
+      # Linux
+      - name: Build (Linux)
+        if: ${{ matrix.goos == 'linux' }}
         run: env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o autovpn -ldflags="-X 'main.version=${{ github.event.release.tag_name }}'" cmd/main.go
 
-      # Handle Linux artifact
       - name: Create archive (Linux)
         if: ${{ matrix.goos == 'linux' }}
         run: tar --transform 's/.*\///g' -czvf autovpn.tar.gz autovpn README.md LICENSE
@@ -75,7 +76,11 @@ jobs:
           asset_name: autovpn_${{ github.event.release.tag_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz
           asset_content_type: application/gzip
 
-      # Handle Windows artifact
+      # Windows
+      - name: Build (Windows)
+        if: ${{ matrix.goos == 'linux' }}
+        run: env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o autovpn.exe -ldflags="-X 'main.version=${{ github.event.release.tag_name }}'" cmd/main.go
+
       - name: Create archive (Windows)
         if: ${{ matrix.goos == 'windows' }}
         run: zip autovpn.zip autovpn.exe README.md LICENSE
