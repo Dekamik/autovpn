@@ -11,11 +11,8 @@ var AvailableProviders = []string{
 
 type Provider interface {
 	GetRegions(silent bool) ([]Region, error)
-	CreateServer(arguments config.Arguments, providerConfig ProviderConfig) (*Instance, error)
+	CreateServer(arguments config.Arguments, yamlConfig config.YamlConfig) (*Instance, error)
 	DestroyServer(instance Instance, authHeader string) error
-}
-
-type ProviderConfig interface {
 }
 
 type Region struct {
@@ -33,22 +30,6 @@ func New(name string) (Provider, error) {
 
 	case "linode":
 		return Linode{}, nil
-
-	default:
-		return nil, fmt.Errorf("unknown provider %q", name)
-	}
-}
-
-func GetProviderConfig(yamlConfig config.YamlConfig, name string) (ProviderConfig, error) {
-	switch name {
-
-	case "linode":
-		providerConfig := yamlConfig.Providers[name].(map[string]interface{})
-		return LinodeConfig{
-			Image:    providerConfig["image"].(string),
-			Key:      providerConfig["key"].(string),
-			TypeSlug: providerConfig["type_slug"].(string),
-		}, nil
 
 	default:
 		return nil, fmt.Errorf("unknown provider %q", name)

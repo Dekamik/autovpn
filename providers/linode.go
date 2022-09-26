@@ -13,13 +13,6 @@ type Linode struct {
 	Provider
 }
 
-type LinodeConfig struct {
-	ProviderConfig
-	Image    string
-	Key      string
-	TypeSlug string
-}
-
 func (l Linode) GetRegions(silent bool) ([]Region, error) {
 	if !silent {
 		fmt.Print("Getting regions... ")
@@ -61,25 +54,25 @@ func (l Linode) GetRegions(silent bool) ([]Region, error) {
 	return regions, nil
 }
 
-func (l Linode) CreateServer(arguments config.Arguments, providerConfig ProviderConfig) (*Instance, error) {
+func (l Linode) CreateServer(arguments config.Arguments, yamlConfig config.YamlConfig) (*Instance, error) {
 	fmt.Print("Creating server... ")
 
-	linodeConfig := providerConfig.(LinodeConfig)
+	client := http.Client{}
 	rootPass, err := helpers.GeneratePassword(64)
 	if err != nil {
 		return nil, err
 	}
 
+	conf := yamlConfig.Providers[arguments.Provider]
 	var jsonData = []byte(
 		fmt.Sprintf("{\"image\":\"%s\",\"region\":\"%s\",\"root_pass\":\"%s\",\"type\":\"%s\"}",
-			linodeConfig.Image, arguments.Region, rootPass, linodeConfig.TypeSlug))
+			conf.Image, arguments.Region, rootPass, conf.TypeSlug))
 
-	client := http.Client{}
 	req, err := http.NewRequest(http.MethodPost, "https://api.linode.com/v4/linode/instances", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("server creation caused error: %w", err)
 	}
-	req.Header.Set("Authorization", "Bearer "+linodeConfig.Key)
+	req.Header.Set("Authorization", "Bearer "+conf.Key)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Dekamik/autovpn")
 
@@ -110,15 +103,15 @@ func (l Linode) CreateServer(arguments config.Arguments, providerConfig Provider
 	return instance, nil
 }
 
-func (l Linode) DestroyServer(instance Instance, authHeader string) error {
-	fmt.Printf("Destroying Linode Instance %s (%s)... ", instance.Id, instance.IpAddress)
+func (l Linode) DestroyServer(instance Instance, token string) error {
+	fmt.Print("Destroying server... ")
 
 	client := http.Client{}
 	req, err := http.NewRequest(http.MethodDelete, "https://api.linode.com/v4/linode/instances/"+instance.Id, nil)
 	if err != nil {
 		return fmt.Errorf("server destruction caused error: %w", err)
 	}
-	req.Header.Set("Authorization", authHeader)
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("User-Agent", "Dekamik/autovpn")
 
 	res, err := client.Do(req)

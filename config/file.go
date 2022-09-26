@@ -18,7 +18,11 @@ type YamlConfig struct {
 			Windows string
 		}
 	}
-	Providers map[string]interface{}
+	Providers map[string]struct {
+		Image    string
+		Key      string
+		TypeSlug string `yaml:"type_slug"`
+	}
 }
 
 func ReadYamlConfig(path string) (*YamlConfig, error) {

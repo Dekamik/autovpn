@@ -48,17 +48,12 @@ func showRegions(provider providers.Provider, silently bool) error {
 }
 
 func provisionAndConnect(provider providers.Provider, arguments config.Arguments, yamlConfig config.YamlConfig) error {
-	providerConfig, err := providers.GetProviderConfig(yamlConfig, arguments.Provider)
+	server, err := provider.CreateServer(arguments, yamlConfig)
 	if err != nil {
 		return err
 	}
 
-	server, err := provider.CreateServer(arguments, providerConfig)
-	if err != nil {
-		return err
-	}
-
-	err = provider.DestroyServer(*server, "")
+	err = provider.DestroyServer(*server, yamlConfig.Providers[arguments.Provider].Key)
 	if err != nil {
 		return err
 	}
