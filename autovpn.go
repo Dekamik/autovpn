@@ -40,14 +40,14 @@ func showRegions(provider providers.Provider) error {
 	}
 
 	for _, region := range regions {
-		fmt.Printf("%s (%s)", region.Id, region.Country)
+		fmt.Printf("%s (%s)\n", region.Id, region.Country)
 	}
 
 	return nil
 }
 
 func provisionAndConnect(provider providers.Provider) error {
-	server, err := provider.CreateServer()
+	_, err := provider.CreateServer()
 	if err != nil {
 		return err
 	}
@@ -63,14 +63,17 @@ func main() {
 
 	if arguments.ShowHelp {
 		fmt.Println(usage)
+		os.Exit(0)
 
 	} else if arguments.ShowVersion {
 		fmt.Println(version)
+		os.Exit(0)
 
 	} else if arguments.ShowProviders {
 		for _, provider := range providers.AvailableProviders {
 			fmt.Println(provider)
 		}
+		os.Exit(0)
 	}
 
 	provider, err := providers.New(arguments.Provider)
