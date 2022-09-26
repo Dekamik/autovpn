@@ -1,4 +1,4 @@
-package config
+package options
 
 type Arguments struct {
 	Provider string

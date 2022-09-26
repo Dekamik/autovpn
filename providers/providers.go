@@ -1,7 +1,7 @@
 package providers
 
 import (
-	"autovpn/config"
+	"autovpn/options"
 	"fmt"
 )
 
@@ -11,7 +11,7 @@ var AvailableProviders = []string{
 
 type Provider interface {
 	GetRegions(silent bool) ([]Region, error)
-	CreateServer(arguments config.Arguments, yamlConfig config.YamlConfig) (*Instance, error)
+	CreateServer(arguments options.Arguments, config options.Config) (*Instance, error)
 	DestroyServer(instance Instance, authHeader string) error
 }
 

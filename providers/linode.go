@@ -1,8 +1,8 @@
 package providers
 
 import (
-	"autovpn/config"
 	"autovpn/helpers"
+	"autovpn/options"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -54,7 +54,7 @@ func (l Linode) GetRegions(silent bool) ([]Region, error) {
 	return regions, nil
 }
 
-func (l Linode) CreateServer(arguments config.Arguments, yamlConfig config.YamlConfig) (*Instance, error) {
+func (l Linode) CreateServer(arguments options.Arguments, config options.Config) (*Instance, error) {
 	fmt.Print("Creating server... ")
 
 	client := http.Client{}
@@ -63,7 +63,7 @@ func (l Linode) CreateServer(arguments config.Arguments, yamlConfig config.YamlC
 		return nil, err
 	}
 
-	conf := yamlConfig.Providers[arguments.Provider]
+	conf := config.Providers[arguments.Provider]
 	var jsonData = []byte(
 		fmt.Sprintf("{\"image\":\"%s\",\"region\":\"%s\",\"root_pass\":\"%s\",\"type\":\"%s\"}",
 			conf.Image, arguments.Region, rootPass, conf.TypeSlug))

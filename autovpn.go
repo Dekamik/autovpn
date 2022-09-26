@@ -1,7 +1,7 @@
 package main
 
 import (
-	"autovpn/config"
+	"autovpn/options"
 	"autovpn/providers"
 	"fmt"
 	"os"
@@ -47,13 +47,13 @@ func showRegions(provider providers.Provider, silently bool) error {
 	return nil
 }
 
-func provisionAndConnect(provider providers.Provider, arguments config.Arguments, yamlConfig config.YamlConfig) error {
-	server, err := provider.CreateServer(arguments, yamlConfig)
+func provisionAndConnect(provider providers.Provider, arguments options.Arguments, config options.Config) error {
+	server, err := provider.CreateServer(arguments, config)
 	if err != nil {
 		return err
 	}
 
-	err = provider.DestroyServer(*server, yamlConfig.Providers[arguments.Provider].Key)
+	err = provider.DestroyServer(*server, config.Providers[arguments.Provider].Key)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func provisionAndConnect(provider providers.Provider, arguments config.Arguments
 }
 
 func main() {
-	arguments, err := config.ParseArguments(os.Args)
+	arguments, err := options.ParseArguments(os.Args)
 	if err != nil {
 		panic(err)
 	}
@@ -93,7 +93,7 @@ func main() {
 			panic(err)
 		}
 	} else {
-		conf, err := config.ReadYamlConfig("./config.yml")
+		conf, err := options.ReadConfig("./options.yml")
 		if err != nil {
 			panic(err)
 		}
