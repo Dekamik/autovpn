@@ -9,7 +9,7 @@ import (
 
 type YamlConfig struct {
 	Agent struct {
-		ScriptUrl string
+		ScriptUrl string `yaml:"script_url"`
 	}
 	Openvpn struct {
 		Path struct {
