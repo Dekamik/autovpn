@@ -6,6 +6,7 @@ type Arguments struct {
 
 	ShowProviders bool
 	ShowRegions   bool
+	Silent        bool
 
 	ShowHelp    bool
 	ShowVersion bool
@@ -36,6 +37,8 @@ func ParseArguments(argv []string) (Arguments, error) {
 
 	if len(argv) <= 2 {
 		return Arguments{Provider: provider, ShowRegions: true}, nil
+	} else if argv[2] == "-s" || argv[2] == "--silent" {
+		return Arguments{Provider: provider, ShowRegions: true, Silent: true}, nil
 	}
 	return Arguments{Provider: provider, Region: argv[2]}, nil
 }

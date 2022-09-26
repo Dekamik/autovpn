@@ -13,7 +13,7 @@ AutoVPN
 Automatically provisions and de-provisions single-use VPN servers for one-shot VPN sessions.
 
 Usage: autovpn <provider> <region>
-       autovpn <provider>
+       autovpn <provider> (--silent | -s)
        autovpn providers
        autovpn (-h | --help)
        autovpn --version
@@ -27,14 +27,15 @@ Arguments:
   <provider>  VPS provider to use
   <region>    VPS provider region on which to create VPN endpoint
 
-Arguments:
-  -h --help  show this
-  --version  show version`
+Options:
+  -s --silent  hush logging to stdout
+  -h --help    show this
+  --version    show version`
 
 var version = "DEVELOPMENT_BUILD"
 
-func showRegions(provider providers.Provider) error {
-	regions, err := provider.GetRegions()
+func showRegions(provider providers.Provider, silently bool) error {
+	regions, err := provider.GetRegions(silently)
 	if err != nil {
 		return err
 	}
@@ -46,8 +47,18 @@ func showRegions(provider providers.Provider) error {
 	return nil
 }
 
-func provisionAndConnect(provider providers.Provider) error {
-	_, err := provider.CreateServer()
+func provisionAndConnect(provider providers.Provider, arguments config.Arguments, yamlConfig config.YamlConfig) error {
+	providerConfig, err := providers.GetProviderConfig(yamlConfig, arguments.Provider)
+	if err != nil {
+		return err
+	}
+
+	server, err := provider.CreateServer(arguments, providerConfig)
+	if err != nil {
+		return err
+	}
+
+	err = provider.DestroyServer(*server, "")
 	if err != nil {
 		return err
 	}
@@ -82,12 +93,17 @@ func main() {
 	}
 
 	if arguments.ShowRegions {
-		err := showRegions(provider)
+		err := showRegions(provider, arguments.Silent)
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		err := provisionAndConnect(provider)
+		conf, err := config.ReadYamlConfig("./config.yml")
+		if err != nil {
+			panic(err)
+		}
+
+		err = provisionAndConnect(provider, arguments, *conf)
 		if err != nil {
 			panic(err)
 		}
