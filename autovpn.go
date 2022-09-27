@@ -93,7 +93,7 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 		return err
 	}
 
-	go helpers.WaitPrint("Provisioning server", finish, exited)
+	go helpers.WaitPrint("Starting server", finish, exited)
 	err = provider.AwaitProvisioning(*server, key)
 	finish <- true
 	<-exited
