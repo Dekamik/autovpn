@@ -5,14 +5,9 @@ import (
 	"fmt"
 )
 
-var AvailableProviders = []string{
-	"linode",
-}
-
-type Provider interface {
-	GetRegions(silent bool) ([]Region, error)
-	CreateServer(arguments options.Arguments, config options.Config) (*Instance, error)
-	DestroyServer(instance Instance, authHeader string) error
+// Add implemented providers here.
+var availableProviders = map[string]Provider{
+	"linode": Linode{},
 }
 
 type Region struct {
@@ -25,13 +20,36 @@ type Instance struct {
 	IpAddress string
 }
 
+type Provider interface {
+	// GetRegions downloads available server regions for the provider.
+	GetRegions() ([]Region, error)
+
+	// CreateServer creates, provisions and boots the server in the cloud.
+	CreateServer(arguments options.Arguments, config options.Config) (*Instance, error)
+
+	// AwaitProvisioning blocks the thread until the server is ready to receive SSH connections.
+	AwaitProvisioning(instance Instance, token string) error
+
+	// DestroyServer destroys the server.
+	DestroyServer(instance Instance, token string) error
+}
+
 func New(name string) (Provider, error) {
-	switch name {
+	provider := availableProviders[name]
 
-	case "linode":
-		return Linode{}, nil
-
-	default:
+	if provider == nil {
 		return nil, fmt.Errorf("unknown provider %q", name)
 	}
+
+	return provider, nil
+}
+
+func ListProviders() []string {
+	list := make([]string, len(availableProviders))
+	i := 0
+	for name := range availableProviders {
+		list[i] = name
+		i++
+	}
+	return list
 }

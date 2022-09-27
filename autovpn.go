@@ -1,6 +1,7 @@
 package main
 
 import (
+	"autovpn/helpers"
 	"autovpn/options"
 	"autovpn/providers"
 	"fmt"
@@ -35,7 +36,17 @@ Options:
 var version = "DEVELOPMENT_BUILD"
 
 func showRegions(provider providers.Provider, silently bool) error {
-	regions, err := provider.GetRegions(silently)
+	finish := make(chan bool)
+	exited := make(chan bool)
+
+	if !silently {
+		go helpers.WaitPrint("Downloading regions", finish, exited)
+	}
+	regions, err := provider.GetRegions()
+	if !silently {
+		finish <- true
+		<-exited
+	}
 	if err != nil {
 		return err
 	}
@@ -48,12 +59,32 @@ func showRegions(provider providers.Provider, silently bool) error {
 }
 
 func provisionAndConnect(provider providers.Provider, arguments options.Arguments, config options.Config) error {
+	var server *providers.Instance = nil
+	finish := make(chan bool)
+	exited := make(chan bool)
+
+	go helpers.WaitPrint("Creating server", finish, exited)
 	server, err := provider.CreateServer(arguments, config)
+	finish <- true
+	<-exited
 	if err != nil {
 		return err
 	}
 
-	err = provider.DestroyServer(*server, config.Providers[arguments.Provider].Key)
+	key := config.Providers[arguments.Provider].Key
+
+	go helpers.WaitPrint("Provisioning server", finish, exited)
+	err = provider.AwaitProvisioning(*server, key)
+	finish <- true
+	<-exited
+	if err != nil {
+		return err
+	}
+
+	go helpers.WaitPrint("Destroying server", finish, exited)
+	err = provider.DestroyServer(*server, key)
+	finish <- true
+	<-exited
 	if err != nil {
 		return err
 	}
@@ -76,7 +107,7 @@ func main() {
 		os.Exit(0)
 
 	} else if arguments.ShowProviders {
-		for _, provider := range providers.AvailableProviders {
+		for _, provider := range providers.ListProviders() {
 			fmt.Println(provider)
 		}
 		os.Exit(0)

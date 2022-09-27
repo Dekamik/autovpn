@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type Linode struct {
@@ -25,11 +26,11 @@ type createRes struct {
 	Ipv4 []string
 }
 
-func (l Linode) GetRegions(silent bool) ([]Region, error) {
-	if !silent {
-		fmt.Print("Getting regions... ")
-	}
+type viewRes struct {
+	Status string
+}
 
+func (l Linode) GetRegions() ([]Region, error) {
 	client := http.Client{}
 	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/regions", nil)
 	if err != nil {
@@ -57,22 +58,17 @@ func (l Linode) GetRegions(silent bool) ([]Region, error) {
 		regions[i] = Region{Id: region.Id, Country: region.Id}
 	}
 
-	if !silent {
-		fmt.Println("OK")
-	}
 	return regions, nil
 }
 
 func (l Linode) CreateServer(arguments options.Arguments, config options.Config) (*Instance, error) {
-	fmt.Print("Creating server... ")
-
 	client := http.Client{}
+	conf := config.Providers[arguments.Provider]
 	rootPass, err := helpers.GeneratePassword(64)
 	if err != nil {
 		return nil, err
 	}
 
-	conf := config.Providers[arguments.Provider]
 	var jsonData = []byte(
 		fmt.Sprintf("{\"image\":\"%s\",\"region\":\"%s\",\"root_pass\":\"%s\",\"type\":\"%s\"}",
 			conf.Image, arguments.Region, rootPass, conf.TypeSlug))
@@ -105,16 +101,41 @@ func (l Linode) CreateServer(arguments options.Arguments, config options.Config)
 		IpAddress: body.Ipv4[0],
 	}
 
-	fmt.Println("OK")
-
-	// TODO: Await provisioning and booting
-
 	return instance, nil
 }
 
-func (l Linode) DestroyServer(instance Instance, token string) error {
-	fmt.Print("Destroying server... ")
+func (l Linode) AwaitProvisioning(instance Instance, token string) error {
+	client := http.Client{}
+	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/linode/instances/"+instance.Id, nil)
+	if err != nil {
+		return fmt.Errorf("server check caused error: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("User-Agent", "Dekamik/autovpn")
 
+	for {
+		res, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("server check caused error: %w", err)
+		}
+		if res.StatusCode != http.StatusOK {
+			return fmt.Errorf("server check returned %d %s", res.StatusCode, res.Status)
+		}
+
+		body := &viewRes{}
+		err = json.NewDecoder(res.Body).Decode(&body)
+		if err != nil {
+			return fmt.Errorf("server check caused error: %w", err)
+		}
+
+		if body.Status == "running" {
+			return nil
+		}
+		time.Sleep(time.Second * 5)
+	}
+}
+
+func (l Linode) DestroyServer(instance Instance, token string) error {
 	client := http.Client{}
 	req, err := http.NewRequest(http.MethodDelete, "https://api.linode.com/v4/linode/instances/"+instance.Id, nil)
 	if err != nil {
@@ -128,9 +149,8 @@ func (l Linode) DestroyServer(instance Instance, token string) error {
 		return fmt.Errorf("server destruction caused error: %w", err)
 	}
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("server creation returned %d %s", res.StatusCode, res.Status)
+		return fmt.Errorf("server destruction returned %d %s", res.StatusCode, res.Status)
 	}
 
-	fmt.Println("OK")
 	return nil
 }
