@@ -20,6 +20,11 @@ type regionRes struct {
 	}
 }
 
+type createRes struct {
+	Id   float64
+	Ipv4 []string
+}
+
 func (l Linode) GetRegions(silent bool) ([]Region, error) {
 	if !silent {
 		fmt.Print("Getting regions... ")
@@ -89,15 +94,15 @@ func (l Linode) CreateServer(arguments options.Arguments, config options.Config)
 		return nil, fmt.Errorf("server creation returned %d %s", res.StatusCode, res.Status)
 	}
 
-	body := make(map[string]interface{})
+	body := &createRes{}
 	err = json.NewDecoder(res.Body).Decode(&body)
 	if err != nil {
 		return nil, fmt.Errorf("server creation caused error: %w", err)
 	}
 
 	instance := &Instance{
-		Id:        fmt.Sprintf("%f", body["id"].(float64)),
-		IpAddress: body["ipv4"].([]interface{})[0].(string),
+		Id:        fmt.Sprintf("%f", body.Id),
+		IpAddress: body.Ipv4[0],
 	}
 
 	fmt.Println("OK")

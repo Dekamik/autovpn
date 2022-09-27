@@ -93,7 +93,7 @@ func main() {
 			panic(err)
 		}
 	} else {
-		conf, err := options.ReadConfig("./options.yml")
+		conf, err := options.ReadConfig("./config.yml")
 		if err != nil {
 			panic(err)
 		}
