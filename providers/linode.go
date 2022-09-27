@@ -13,6 +13,13 @@ type Linode struct {
 	Provider
 }
 
+type regionRes struct {
+	Data []struct {
+		Id      string
+		Country string
+	}
+}
+
 func (l Linode) GetRegions(silent bool) ([]Region, error) {
 	if !silent {
 		fmt.Print("Getting regions... ")
@@ -34,18 +41,15 @@ func (l Linode) GetRegions(silent bool) ([]Region, error) {
 		return nil, fmt.Errorf("region download returned %d %s", res.StatusCode, res.Status)
 	}
 
-	body := make(map[string]interface{})
-	err = json.NewDecoder(res.Body).Decode(&body)
+	body := &regionRes{}
+	err = json.NewDecoder(res.Body).Decode(body)
 	if err != nil {
 		return nil, fmt.Errorf("region download caused error: %w", err)
 	}
 
-	data := body["data"].([]interface{})
-	regions := make([]Region, len(data))
-
-	for i, region := range data {
-		regionData := region.(map[string]interface{})
-		regions[i] = Region{Id: regionData["id"].(string), Country: regionData["country"].(string)}
+	regions := make([]Region, len(body.Data))
+	for i, region := range body.Data {
+		regions[i] = Region{Id: region.Id, Country: region.Id}
 	}
 
 	if !silent {
