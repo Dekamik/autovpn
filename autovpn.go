@@ -58,8 +58,24 @@ func showRegions(provider providers.Provider, silently bool) error {
 	return nil
 }
 
+func destroyServer(provider providers.Provider, server providers.Instance, key string) error {
+	finish := make(chan bool)
+	exited := make(chan bool)
+
+	go helpers.WaitPrint("Destroying server", finish, exited)
+	err := provider.DestroyServer(server, key)
+	finish <- true
+	<-exited
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func provisionAndConnect(provider providers.Provider, arguments options.Arguments, config options.Config) error {
 	var server *providers.Instance = nil
+	key := config.Providers[arguments.Provider].Key
 	finish := make(chan bool)
 	exited := make(chan bool)
 
@@ -68,27 +84,31 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 	finish <- true
 	<-exited
 	if err != nil {
+		if server != nil {
+			err := destroyServer(provider, *server, key)
+			if err != nil {
+				return err
+			}
+		}
 		return err
 	}
-
-	key := config.Providers[arguments.Provider].Key
 
 	go helpers.WaitPrint("Provisioning server", finish, exited)
 	err = provider.AwaitProvisioning(*server, key)
 	finish <- true
 	<-exited
 	if err != nil {
+		err := destroyServer(provider, *server, key)
+		if err != nil {
+			return err
+		}
 		return err
 	}
 
-	go helpers.WaitPrint("Destroying server", finish, exited)
-	err = provider.DestroyServer(*server, key)
-	finish <- true
-	<-exited
+	err = destroyServer(provider, *server, key)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

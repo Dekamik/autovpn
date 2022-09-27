@@ -10,17 +10,16 @@ import (
 // To await method completion, simply call <-exited.
 // This command uses VT100 escape codes to erase the line in terminal.
 func WaitPrint(message string, finish chan bool, exited chan bool) {
-	i := 0
+	startTime := time.Now().Local()
 	for {
 		select {
 		case <-finish:
-			fmt.Printf("\033[2K\r%s [%ds] OK\n", message, i)
+			fmt.Printf("\033[2K\r%s [%s] OK\n", message, time.Since(startTime).Truncate(time.Second))
 			exited <- true
 			return
 		default:
-			fmt.Printf("\033[2K\r%s [%ds]", message, i)
+			fmt.Printf("\033[2K\r%s [%s]", message, time.Since(startTime).Truncate(time.Second))
 			time.Sleep(time.Second)
-			i++
 		}
 	}
 }
