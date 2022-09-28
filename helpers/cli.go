@@ -20,7 +20,7 @@ func WaitPrint(message string, finish chan bool, exited chan bool) {
             exited <- true
             return
         default:
-            fmt.Printf("\033[2K\r%-35s %-6s %s", message, time.Since(startTime).Truncate(time.Second), string(wheel[i]))
+            fmt.Printf("\033[2K\r%-35s %-6s %s ", message, time.Since(startTime).Truncate(time.Second), string(wheel[i]))
             time.Sleep(time.Millisecond * 100)
 
             if i == len(wheel)-1 {

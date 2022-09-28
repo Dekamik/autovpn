@@ -23,7 +23,7 @@ func dial(network string, addr string, config *ssh.ClientConfig, maxTries int, c
 }
 
 func Install(instance providers.Instance, installScriptUrl string) (*string, error) {
-    configPath := "./sshClient.ovpn"
+    configPath := "client.ovpn"
     config := &ssh.ClientConfig{
         User:            instance.RootUser,
         Auth:            []ssh.AuthMethod{ssh.Password(instance.RootPass)},
@@ -99,7 +99,7 @@ func Install(instance providers.Instance, installScriptUrl string) (*string, err
 }
 
 func Connect(ovpnConfig string) error {
-    fmt.Println("Connecting... Press CTRL+C to exit")
+    fmt.Println("Connecting...")
 
     cmd := ovpnConnect(ovpnConfig)
     cmd.Stdin = os.Stdin
@@ -117,9 +117,6 @@ func Connect(ovpnConfig string) error {
 
     go func() {
         <-sigc
-        cmd.Stdin = nil
-        cmd.Stdout = nil
-        cmd.Stderr = nil
         _ = cmd.Process.Kill()
         fmt.Println("\nDisconnected")
         waiting = false
