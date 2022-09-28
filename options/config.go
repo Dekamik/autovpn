@@ -11,13 +11,6 @@ type Config struct {
 	Agent struct {
 		ScriptUrl string `yaml:"script_url"`
 	}
-	Openvpn struct {
-		Path struct {
-			Darwin  string
-			Linux   string
-			Windows string
-		}
-	}
 	Providers map[string]struct {
 		Image    string
 		Key      string

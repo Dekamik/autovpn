@@ -18,6 +18,9 @@ type Region struct {
 type Instance struct {
 	Id        string
 	IpAddress string
+	RootUser  string
+	RootPass  string
+	SshPort   int
 }
 
 type Provider interface {

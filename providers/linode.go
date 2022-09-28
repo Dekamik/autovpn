@@ -99,6 +99,9 @@ func (l Linode) CreateServer(arguments options.Arguments, config options.Config)
 	instance := &Instance{
 		Id:        fmt.Sprintf("%f", body.Id),
 		IpAddress: body.Ipv4[0],
+		RootUser:  "root",
+		RootPass:  rootPass,
+		SshPort:   22,
 	}
 
 	return instance, nil

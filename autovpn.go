@@ -2,6 +2,7 @@ package main
 
 import (
 	"autovpn/helpers"
+	"autovpn/openvpn"
 	"autovpn/options"
 	"autovpn/providers"
 	"fmt"
@@ -74,18 +75,18 @@ func destroyServer(provider providers.Provider, server providers.Instance, key s
 }
 
 func provisionAndConnect(provider providers.Provider, arguments options.Arguments, config options.Config) error {
-	var server *providers.Instance = nil
+	var instance *providers.Instance = nil
 	key := config.Providers[arguments.Provider].Key
 	finish := make(chan bool)
 	exited := make(chan bool)
 
-	go helpers.WaitPrint("Creating server", finish, exited)
-	server, err := provider.CreateServer(arguments, config)
+	go helpers.WaitPrint("Creating instance", finish, exited)
+	instance, err := provider.CreateServer(arguments, config)
 	finish <- true
 	<-exited
 	if err != nil {
-		if server != nil {
-			err := destroyServer(provider, *server, key)
+		if instance != nil {
+			err := destroyServer(provider, *instance, key)
 			if err != nil {
 				return err
 			}
@@ -93,19 +94,41 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 		return err
 	}
 
-	go helpers.WaitPrint("Starting server", finish, exited)
-	err = provider.AwaitProvisioning(*server, key)
+	go helpers.WaitPrint("Starting instance", finish, exited)
+	err = provider.AwaitProvisioning(*instance, key)
 	finish <- true
 	<-exited
 	if err != nil {
-		err := destroyServer(provider, *server, key)
+		err := destroyServer(provider, *instance, key)
 		if err != nil {
 			return err
 		}
 		return err
 	}
 
-	err = destroyServer(provider, *server, key)
+	go helpers.WaitPrint("Installing OpenVPN Server", finish, exited)
+	ovpnConfig, err := openvpn.Install(*instance, config.Agent.ScriptUrl)
+	finish <- true
+	<-exited
+	if err != nil {
+		err := destroyServer(provider, *instance, key)
+		if err != nil {
+			return err
+		}
+		return err
+	}
+
+	fmt.Printf("Connecting to %s press CTRL-C to exit", ovpnConfig)
+	err = openvpn.Connect(*ovpnConfig)
+	if err != nil {
+		err := destroyServer(provider, *instance, key)
+		if err != nil {
+			return err
+		}
+		return err
+	}
+
+	err = destroyServer(provider, *instance, key)
 	if err != nil {
 		return err
 	}
