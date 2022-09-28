@@ -1,92 +1,132 @@
 package openvpn
 
 import (
-	"autovpn/providers"
-	"bytes"
-	"fmt"
-	"golang.org/x/crypto/ssh"
-	"os"
-	"os/signal"
+    "autovpn/providers"
+    "fmt"
+    "github.com/pkg/sftp"
+    "golang.org/x/crypto/ssh"
+    "os"
+    "os/signal"
+    "time"
 )
 
+func dial(network string, addr string, config *ssh.ClientConfig, maxTries int, currentTry int) (*ssh.Client, error) {
+    sshClient, err := ssh.Dial(network, addr, config)
+    if err != nil {
+        if currentTry < maxTries {
+            time.Sleep(time.Second * 3)
+            return dial(network, addr, config, maxTries, currentTry+1)
+        }
+        return nil, err
+    }
+    return sshClient, nil
+}
+
 func Install(instance providers.Instance, installScriptUrl string) (*string, error) {
-	configPath := "./client.ovpn"
-	config := &ssh.ClientConfig{
-		User:            instance.RootUser,
-		Auth:            []ssh.AuthMethod{ssh.Password(instance.RootPass)},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
+    configPath := "./sshClient.ovpn"
+    config := &ssh.ClientConfig{
+        User:            instance.RootUser,
+        Auth:            []ssh.AuthMethod{ssh.Password(instance.RootPass)},
+        HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+    }
 
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", instance.IpAddress, instance.SshPort), config)
-	if err != nil {
-		return nil, err
-	}
-	defer client.Close()
+    sshClient, err := dial("tcp", fmt.Sprintf("%s:%d", instance.IpAddress, instance.SshPort), config, 10, 0)
+    if err != nil {
+        return nil, err
+    }
+    defer sshClient.Close()
 
-	session, err := client.NewSession()
-	if err != nil {
-		return nil, err
-	}
-	defer session.Close()
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
+    session, err := sshClient.NewSession()
+    if err != nil {
+        return nil, err
+    }
+    defer session.Close()
 
-	if err := session.Run(fmt.Sprintf("curl %s -o openvpn-install.sh", installScriptUrl)); err != nil {
-		return nil, err
-	}
-	if err := session.Run("chmod +x openvpn-install.sh"); err != nil {
-		return nil, err
-	}
-	if err := session.Run("export AUTO_INSTALL=y; ./openvpn-install.sh"); err != nil {
-		return nil, err
-	}
-	if err := session.Run("sed -i 's/^verb [0-9]*$/verb 0/g' /etc/openvpn/server.conf"); err != nil {
-		return nil, err
-	}
+    stdin, err := session.StdinPipe()
+    if err != nil {
+        return nil, err
+    }
+    defer stdin.Close()
 
-	var buffer bytes.Buffer
-	session.Stdout = &buffer
-	if err := session.Run("cat /root/client.ovpn"); err != nil {
-		return nil, err
-	}
+    err = session.Shell()
+    if err != nil {
+        return nil, err
+    }
 
-	f, err := os.Create(configPath)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
+    commands := []string{
+        fmt.Sprintf("curl %s -o openvpn-install.sh", installScriptUrl),
+        "chmod +x openvpn-install.sh",
+        "export AUTO_INSTALL=y; ./openvpn-install.sh",
+        "sed -i 's/^verb [0-9]*$/verb 0/g' /etc/openvpn/server.conf",
+        "exit",
+    }
 
-	_, err = f.Write(buffer.Bytes())
-	if err != nil {
-		return nil, err
-	}
+    for _, cmd := range commands {
+        _, err = fmt.Fprintf(stdin, "%s\n", cmd)
+        if err != nil {
+            return nil, err
+        }
+    }
 
-	return &configPath, nil
+    err = session.Wait()
+    if err != nil {
+        return nil, err
+    }
+
+    sftpClient, err := sftp.NewClient(sshClient)
+    if err != nil {
+        return nil, err
+    }
+    defer sftpClient.Close()
+
+    localConfig, err := os.Create(configPath)
+    if err != nil {
+        return nil, err
+    }
+    defer localConfig.Close()
+
+    remoteConfig, err := sftpClient.Open("/root/client.ovpn")
+    if err != nil {
+        return nil, err
+    }
+    defer remoteConfig.Close()
+
+    if _, err := localConfig.ReadFrom(remoteConfig); err != nil {
+        return nil, err
+    }
+
+    return &configPath, nil
 }
 
 func Connect(ovpnConfig string) error {
-	cmd := ovpnConnect(ovpnConfig)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Start()
-	if err != nil {
-		return err
-	}
+    fmt.Println("Connecting... Press CTRL+C to exit")
 
-	var waiting = true
+    cmd := ovpnConnect(ovpnConfig)
+    cmd.Stdin = os.Stdin
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    err := cmd.Start()
+    if err != nil {
+        return err
+    }
 
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, os.Kill)
+    var waiting = true
 
-	go func() {
-		<-sigc
-		_ = cmd.Process.Kill()
-		waiting = false
-	}()
+    sigc := make(chan os.Signal, 1)
+    signal.Notify(sigc, os.Interrupt, os.Kill)
 
-	for waiting {
-	}
+    go func() {
+        <-sigc
+        cmd.Stdin = nil
+        cmd.Stdout = nil
+        cmd.Stderr = nil
+        _ = cmd.Process.Kill()
+        fmt.Println("\nDisconnected")
+        waiting = false
+    }()
 
-	return nil
+    for waiting {
+    }
+
+    return nil
 }
