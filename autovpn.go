@@ -6,6 +6,7 @@ import (
 	"autovpn/options"
 	"autovpn/providers"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -118,7 +119,7 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 func main() {
 	arguments, err := options.ParseArguments(os.Args)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	if arguments.ShowHelp {
@@ -138,23 +139,23 @@ func main() {
 
 	provider, err := providers.New(arguments.Provider)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	if arguments.ShowRegions {
 		err := showRegions(provider)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 	} else {
 		conf, err := options.ReadConfig("./config.yml")
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 
 		err = provisionAndConnect(provider, arguments, *conf)
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 	}
 
