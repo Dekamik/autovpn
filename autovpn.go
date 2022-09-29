@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/user"
+	"runtime"
 )
 
 var usage = `
@@ -74,6 +76,26 @@ func removeOvpnConfig(ovpnConfig *string) {
 }
 
 func provisionAndConnect(provider providers.Provider, arguments options.Arguments, config options.Config) error {
+	switch runtime.GOOS {
+	case "windows":
+		_, err := os.Open("\\\\.\\PHYSICALDRIVE0")
+		if err != nil {
+			return fmt.Errorf("must be run as administrator")
+		}
+		break
+
+	case "darwin":
+	case "linux":
+		currentUser, err := user.Current()
+		if err != nil {
+			return err
+		}
+		if currentUser.Name != "root" {
+			return fmt.Errorf("root privileges required")
+		}
+		break
+	}
+
 	var instance *providers.Instance = nil
 	key := config.Providers[arguments.Provider].Key
 	finish := make(chan bool)

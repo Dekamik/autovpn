@@ -1,12 +1,13 @@
 package openvpn
 
 import (
-    "autovpn/providers"
-    "fmt"
-    "github.com/pkg/sftp"
-    "golang.org/x/crypto/ssh"
-    "os"
-    "time"
+	"autovpn/providers"
+	"fmt"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
+	"os"
+	"os/signal"
+	"time"
 )
 
 func dial(network string, addr string, config *ssh.ClientConfig, maxTries int, currentTry int) (*ssh.Client, error) {
@@ -98,5 +99,31 @@ func Install(instance providers.Instance, installScriptUrl string) (*string, err
 }
 
 func Connect(ovpnConfig string) error {
-	return ovpnConnect(ovpnConfig)
+	fmt.Println("Connecting...")
+
+	cmd := ovpnConnect(ovpnConfig)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	var waiting = true
+
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, os.Interrupt, os.Kill)
+
+	go func() {
+		<-sigc
+		_ = cmd.Process.Kill()
+		fmt.Println("\nDisconnected")
+		waiting = false
+	}()
+
+	for waiting {
+	}
+
+	return nil
 }
