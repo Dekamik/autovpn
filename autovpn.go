@@ -1,12 +1,12 @@
 package main
 
 import (
-    "autovpn/helpers"
-    "autovpn/openvpn"
-    "autovpn/options"
-    "autovpn/providers"
-    "fmt"
-    "os"
+	"autovpn/helpers"
+	"autovpn/openvpn"
+	"autovpn/options"
+	"autovpn/providers"
+	"fmt"
+	"os"
 )
 
 var usage = `
@@ -37,140 +37,126 @@ Options:
 var version = "DEVELOPMENT_BUILD"
 
 func showRegions(provider providers.Provider) error {
-    regions, err := provider.GetRegions()
-    if err != nil {
-        return err
-    }
+	regions, err := provider.GetRegions()
+	if err != nil {
+		return err
+	}
 
-    for _, region := range regions {
-        fmt.Printf("%s (%s)\n", region.Id, region.Country)
-    }
+	for _, region := range regions {
+		fmt.Printf("%s (%s)\n", region.Id, region.Country)
+	}
 
-    return nil
+	return nil
 }
 
-func destroyServer(provider providers.Provider, server providers.Instance, key string) error {
-    finish := make(chan bool)
-    exited := make(chan bool)
+func destroyServer(provider providers.Provider, server providers.Instance, key string) {
+	finish := make(chan bool)
+	exited := make(chan bool)
 
-    go helpers.WaitPrint("Destroying server", finish, exited)
-    err := provider.DestroyServer(server, key)
-    finish <- true
-    <-exited
-    if err != nil {
-        return err
-    }
+	go helpers.WaitPrint("Destroying server", finish, exited)
+	err := provider.DestroyServer(server, key)
+	finish <- true
+	<-exited
+	if err != nil {
+		panic(err)
+	}
+}
 
-    return nil
+func removeOvpnConfig(ovpnConfig *string) {
+	finish := make(chan bool)
+	exited := make(chan bool)
+
+	go helpers.WaitPrint(fmt.Sprintf("Removing %s", *ovpnConfig), finish, exited)
+	_ = os.Remove(*ovpnConfig)
+	finish <- true
+	<-exited
 }
 
 func provisionAndConnect(provider providers.Provider, arguments options.Arguments, config options.Config) error {
-    var instance *providers.Instance = nil
-    key := config.Providers[arguments.Provider].Key
-    finish := make(chan bool)
-    exited := make(chan bool)
+	var instance *providers.Instance = nil
+	key := config.Providers[arguments.Provider].Key
+	finish := make(chan bool)
+	exited := make(chan bool)
 
-    go helpers.WaitPrint("Creating instance", finish, exited)
-    instance, err := provider.CreateServer(arguments, config)
-    finish <- true
-    <-exited
-    if err != nil {
-        if instance != nil {
-            destErr := destroyServer(provider, *instance, key)
-            if destErr != nil {
-                return destErr
-            }
-        }
-        return err
-    }
+	go helpers.WaitPrint("Creating instance", finish, exited)
+	instance, err := provider.CreateServer(arguments, config)
+	finish <- true
+	<-exited
+	if err != nil {
+		if instance != nil {
+			destroyServer(provider, *instance, key)
+		}
+		return err
+	}
+	defer destroyServer(provider, *instance, key)
 
-    go helpers.WaitPrint("Starting instance", finish, exited)
-    err = provider.AwaitProvisioning(*instance, key)
-    finish <- true
-    <-exited
-    if err != nil {
-        destErr := destroyServer(provider, *instance, key)
-        if destErr != nil {
-            return destErr
-        }
-        return err
-    }
+	go helpers.WaitPrint("Starting instance", finish, exited)
+	err = provider.AwaitProvisioning(*instance, key)
+	finish <- true
+	<-exited
+	if err != nil {
+		return err
+	}
 
-    go helpers.WaitPrint("Installing OpenVPN Server", finish, exited)
-    ovpnConfig, err := openvpn.Install(*instance, config.Agent.ScriptUrl)
-    finish <- true
-    <-exited
-    if err != nil {
-        destErr := destroyServer(provider, *instance, key)
-        if destErr != nil {
-            return destErr
-        }
-        return err
-    }
+	go helpers.WaitPrint("Installing OpenVPN Server", finish, exited)
+	ovpnConfig, err := openvpn.Install(*instance, config.Agent.ScriptUrl)
+	finish <- true
+	<-exited
+	if err != nil {
+		return err
+	}
+	defer removeOvpnConfig(ovpnConfig)
 
-    err = openvpn.Connect(*ovpnConfig)
-    if err != nil {
-        destErr := destroyServer(provider, *instance, key)
-        if destErr != nil {
-            return destErr
-        }
-        return err
-    }
+	err = openvpn.Connect(*ovpnConfig)
+	if err != nil {
+		return err
+	}
 
-    go helpers.WaitPrint(fmt.Sprintf("Removing %s", *ovpnConfig), finish, exited)
-    _ = os.Remove(*ovpnConfig)
-    finish <- true
-    <-exited
-
-    err = destroyServer(provider, *instance, key)
-    if err != nil {
-        return err
-    }
-    return nil
+	return nil
 }
 
 func main() {
-    arguments, err := options.ParseArguments(os.Args)
-    if err != nil {
-        panic(err)
-    }
+	arguments, err := options.ParseArguments(os.Args)
+	if err != nil {
+		panic(err)
+	}
 
-    if arguments.ShowHelp {
-        fmt.Println(usage)
-        os.Exit(0)
+	if arguments.ShowHelp {
+		fmt.Println(usage)
+		os.Exit(0)
 
-    } else if arguments.ShowVersion {
-        fmt.Println(version)
-        os.Exit(0)
+	} else if arguments.ShowVersion {
+		fmt.Println(version)
+		os.Exit(0)
 
-    } else if arguments.ShowProviders {
-        for _, provider := range providers.ListProviders() {
-            fmt.Println(provider)
-        }
-        os.Exit(0)
-    }
+	} else if arguments.ShowProviders {
+		for _, provider := range providers.ListProviders() {
+			fmt.Println(provider)
+		}
+		os.Exit(0)
+	}
 
-    provider, err := providers.New(arguments.Provider)
-    if err != nil {
-        panic(err)
-    }
+	provider, err := providers.New(arguments.Provider)
+	if err != nil {
+		panic(err)
+	}
 
-    if arguments.ShowRegions {
-        err := showRegions(provider)
-        if err != nil {
-            panic(err)
-        }
-    } else {
-        conf, err := options.ReadConfig("./config.yml")
-        if err != nil {
-            panic(err)
-        }
+	if arguments.ShowRegions {
+		err := showRegions(provider)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		conf, err := options.ReadConfig("./config.yml")
+		if err != nil {
+			panic(err)
+		}
 
-        err = provisionAndConnect(provider, arguments, *conf)
-        if err != nil {
-            panic(err)
-        }
-    }
+		err = provisionAndConnect(provider, arguments, *conf)
+		if err != nil {
+			panic(err)
+		}
+	}
 
-    os.Exit(0)
+	os.Exit(0)
 }
