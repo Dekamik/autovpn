@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"path/filepath"
 	"runtime"
 )
 
@@ -169,7 +170,12 @@ func main() {
 			log.Fatalln(err)
 		}
 	} else {
-		conf, err := options.ReadConfig("./config.yml")
+		exe, err := os.Executable()
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		conf, err := options.ReadConfig(filepath.Dir(exe) + "/config.yml")
 		if err != nil {
 			log.Fatalln(err)
 		}
