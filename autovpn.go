@@ -33,7 +33,6 @@ Arguments:
   <region>    VPS provider region on which to create VPN endpoint
 
 Options:
-  -s --silent  hush logging to stdout
   -h --help    show this
   --version    show version`
 
