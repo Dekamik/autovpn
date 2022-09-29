@@ -10,7 +10,7 @@ import (
 func ovpnConnect(ovpnConfig string) error {
 	fmt.Println("Connected! Press CTRL+C to disconnect")
 
-	cmd := exec.Command("Powershell -NoLogo")
+	cmd := exec.Command("Powershell")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
