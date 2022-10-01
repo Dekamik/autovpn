@@ -2,8 +2,35 @@ package helpers
 
 import (
 	"fmt"
+	"os"
+	"os/user"
+	"runtime"
 	"time"
 )
+
+func IsAdmin() (bool, error) {
+	switch runtime.GOOS {
+	case "windows":
+		_, err := os.Open("\\\\.\\PHYSICALDRIVE0")
+		if err != nil {
+			return false, nil
+		}
+		return true, nil
+
+	case "darwin":
+	case "linux":
+		currentUser, err := user.Current()
+		if err != nil {
+			return false, err
+		}
+		if currentUser.Name != "root" {
+			return false, nil
+		}
+		return true, nil
+	}
+
+	return false, fmt.Errorf("%s is not supported", runtime.GOOS)
+}
 
 // WaitPrint is a goroutine that prints the message and prints dots while waiting.
 // It finishes when it receives true in the finish bool channel.

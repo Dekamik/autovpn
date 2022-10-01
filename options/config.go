@@ -11,6 +11,9 @@ type Config struct {
 	Agent struct {
 		ScriptUrl string `yaml:"script_url"`
 	}
+	Overrides struct {
+		OpenvpnExe string `yaml:"openvpn_exe"`
+	}
 	Providers map[string]struct {
 		Image    string
 		Key      string
