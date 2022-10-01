@@ -86,7 +86,7 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 
 	exe := openvpn.GetExecutable(config.Overrides.OpenvpnExe)
 	if isInstalled := openvpn.IsInstalled(exe); !isInstalled {
-		return fmt.Errorf("OpenVPN must be installed")
+		return fmt.Errorf("couldn't find OpenVPN exe (%s). OpenVPN must be installed", exe)
 	}
 
 	key := config.Providers[arguments.Provider].Key
