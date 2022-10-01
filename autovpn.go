@@ -8,9 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/user"
 	"path/filepath"
-	"runtime"
 )
 
 var usage = `
@@ -76,27 +74,21 @@ func removeOvpnConfig(ovpnConfig *string) {
 }
 
 func provisionAndConnect(provider providers.Provider, arguments options.Arguments, config options.Config) error {
-	switch runtime.GOOS {
-	case "windows":
-		_, err := os.Open("\\\\.\\PHYSICALDRIVE0")
-		if err != nil {
-			return fmt.Errorf("must be run as administrator")
-		}
-		break
-
-	case "darwin":
-	case "linux":
-		currentUser, err := user.Current()
+	if !arguments.NoAdminCheck {
+		isAdmin, err := helpers.IsAdmin()
 		if err != nil {
 			return err
 		}
-		if currentUser.Name != "root" {
-			return fmt.Errorf("root privileges required")
+		if !isAdmin {
+			return fmt.Errorf("Root/Administrator privileges required")
 		}
-		break
 	}
 
-	var instance *providers.Instance = nil
+	exe := openvpn.GetExecutable(config.Overrides.OpenvpnExe)
+	if isInstalled := openvpn.IsInstalled(exe); !isInstalled {
+		return fmt.Errorf("couldn't find OpenVPN exe (%s). OpenVPN must be installed", exe)
+	}
+
 	key := config.Providers[arguments.Provider].Key
 	finish := make(chan bool)
 	exited := make(chan bool)
@@ -130,7 +122,7 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 	}
 	defer removeOvpnConfig(ovpnConfig)
 
-	err = openvpn.Connect(*ovpnConfig)
+	err = openvpn.Connect(exe, *ovpnConfig)
 	if err != nil {
 		return err
 	}
@@ -139,10 +131,7 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 }
 
 func main() {
-	arguments, err := options.ParseArguments(os.Args)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	arguments := options.ParseArguments(os.Args)
 
 	if arguments.ShowHelp {
 		fmt.Println(usage)
@@ -170,12 +159,19 @@ func main() {
 			log.Fatalln(err)
 		}
 	} else {
-		exe, err := os.Executable()
-		if err != nil {
-			log.Fatalln(err)
+		var configPath string
+
+		if arguments.DebugMode {
+			configPath = "./config.yml"
+		} else {
+			exe, err := os.Executable()
+			if err != nil {
+				log.Fatalln(err)
+			}
+			configPath = filepath.Dir(exe) + "/config.yml"
 		}
 
-		conf, err := options.ReadConfig(filepath.Dir(exe) + "/config.yml")
+		conf, err := options.ReadConfig(configPath)
 		if err != nil {
 			log.Fatalln(err)
 		}
