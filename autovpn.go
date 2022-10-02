@@ -73,8 +73,8 @@ func destroyServer(provider providers.Provider, server providers.Instance, key s
 	}
 }
 
-func purgeProvider(name string, config options.Config) error {
-	provider, err := getProvider(name)
+func purgeProvider(providerName string, config options.Config) error {
+	provider, err := getProvider(providerName)
 	if err != nil {
 		return err
 	}
@@ -100,12 +100,12 @@ func purgeProvider(name string, config options.Config) error {
 
 		wg.Add(1)
 		go func(instance providers.Instance) {
-			log.Printf("Purging %s %s...", name, instance.Id)
-			err := provider.DestroyServer(instance, config.Providers[name].Key)
+			log.Printf("Purging %s %s...", providerName, instance.Id)
+			err := provider.DestroyServer(instance, config.Providers[providerName].Key)
 			if err != nil {
-				log.Fatalf("Purge ERR %s %s: %s", name, instance.Id, err.Error())
+				log.Fatalf("Purge ERR %s %s: %s", providerName, instance.Id, err.Error())
 			}
-			log.Printf("Purge OK %s %s", name, instance.Id)
+			log.Printf("Purge OK %s %s", providerName, instance.Id)
 			wg.Done()
 		}(instance)
 	}
@@ -117,6 +117,35 @@ func purgeProvider(name string, config options.Config) error {
 func purgeAll(config options.Config) error {
 	for name := range config.Providers {
 		err := purgeProvider(name, config)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func listZombies(providerName string, config options.Config) error {
+	provider, err := getProvider(providerName)
+	if err != nil {
+		return err
+	}
+
+	instances, err := provider.GetInstances(config)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("--- %s: %d ---\n", providerName, len(instances))
+	for _, instance := range instances {
+		fmt.Printf("%s %s\n", providerName, instance.Id)
+	}
+
+	return nil
+}
+
+func listAllZombies(config options.Config) error {
+	for name := range config.Providers {
+		err := listZombies(name, config)
 		if err != nil {
 			return err
 		}
@@ -225,7 +254,14 @@ func main() {
 		os.Exit(0)
 
 	} else if arguments.Purge && len(arguments.Provider) == 0 {
-		err := purgeAll(*config)
+		err = purgeAll(*config)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		os.Exit(0)
+
+	} else if arguments.ListZombies && len(arguments.Provider) == 0 {
+		err = listAllZombies(*config)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -245,6 +281,12 @@ func main() {
 
 	} else if arguments.Purge {
 		err = purgeProvider(arguments.Provider, *config)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+	} else if arguments.ListZombies {
+		err = listZombies(arguments.Provider, *config)
 		if err != nil {
 			log.Fatalln(err)
 		}
