@@ -6,7 +6,7 @@ This tool provisions single-session VPN servers at chosen VPS providers. Then it
 automatically connects to the VPN server and destroys the VPN server when you
 disconnect from the session.
 
-## Table of contents
+## Table of content
 - [1. Setup](#setup)
     - [1.1 Install OpenVPN](#1-install-openvpn)
     - [1.2 Download binary](#2-download-binary)
@@ -45,6 +45,10 @@ system and architecture.
 ## 3: Unzip archive and configure `config.yml`
 
 Copy the `default.config.yml` and setup according to [Configuration](#configuration) below.
+
+## 4: Run
+
+To get started, refer to [Usage](#usage) below, or run `autovpn --help`
 
 # Configuration
 
