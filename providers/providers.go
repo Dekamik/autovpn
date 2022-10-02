@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+const (
+	InstanceTag = "AutoVPN Instance"
+)
+
 // Add implemented providers here.
 var availableProviders = map[string]Provider{
 	"linode": Linode{},
@@ -21,11 +25,15 @@ type Instance struct {
 	RootUser  string
 	RootPass  string
 	SshPort   int
+	Tags      []string
 }
 
 type Provider interface {
 	// GetRegions downloads available server regions for the provider.
 	GetRegions() ([]Region, error)
+
+	// GetServers downloads all AutoVPN instances at the provider.
+	GetInstances(config options.Config) ([]Instance, error)
 
 	// CreateServer creates, provisions and boots the server in the cloud.
 	CreateServer(arguments options.Arguments, config options.Config) (*Instance, error)

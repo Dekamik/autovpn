@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 var usage = `
@@ -16,16 +17,17 @@ AutoVPN
 
 Automatically provisions and de-provisions single-use VPN servers for one-shot VPN sessions.
 
-Usage: autovpn <provider> <region>
-       autovpn <provider>
-       autovpn providers
-       autovpn (-h | --help)
-       autovpn --version
-
-Commands:
-  <provider> <region>  create and connect to VPN endpoint at <provider> on <region>
-  <provider>           list available regions for <provider>
-  providers            list available providers
+Usage: autovpn <provider> <region>  Provision a VPN server at <provider> on <region> and connects to it
+	   autovpn <provider> zombies   Lists all AutoVPN servers that should be destroyed at provider
+       autovpn <provider> purge     Destroys all AutoVPN servers at provider
+       autovpn <provider>           Lists all regions at <provider>
+       
+       autovpn providers            Lists all available providers
+       autovpn zombies              Lists all AutoVPN servers that should be destroyed
+       autovpn purge                Destroys all AutoVPN servers at all providers
+       
+       autovpn (-h | --help)        Shows further help and options
+       autovpn --version            Shows version
 
 Arguments:
   <provider>  VPS provider to use
@@ -36,6 +38,14 @@ Options:
   --version    show version`
 
 var version = "DEVELOPMENT_BUILD"
+
+func getProvider(name string) (providers.Provider, error) {
+	provider, err := providers.New(name)
+	if err != nil {
+		return nil, err
+	}
+	return provider, nil
+}
 
 func showRegions(provider providers.Provider) error {
 	regions, err := provider.GetRegions()
@@ -61,6 +71,57 @@ func destroyServer(provider providers.Provider, server providers.Instance, key s
 	if err != nil {
 		panic(err)
 	}
+}
+
+func purgeProvider(name string, config options.Config) error {
+	provider, err := getProvider(name)
+	if err != nil {
+		return err
+	}
+
+	instances, err := provider.GetInstances(config)
+	if err != nil {
+		return err
+	}
+
+	var wg sync.WaitGroup
+	for _, instance := range instances {
+		isAutoVPNInstance := false
+		for _, tag := range instance.Tags {
+			if tag == providers.InstanceTag {
+				isAutoVPNInstance = true
+				break
+			}
+		}
+
+		if !isAutoVPNInstance {
+			continue
+		}
+
+		wg.Add(1)
+		go func(instance providers.Instance) {
+			log.Printf("Purging %s %s...", name, instance.Id)
+			err := provider.DestroyServer(instance, config.Providers[name].Key)
+			if err != nil {
+				log.Fatalf("Purge ERR %s %s: %s", name, instance.Id, err.Error())
+			}
+			log.Printf("Purge OK %s %s", name, instance.Id)
+			wg.Done()
+		}(instance)
+	}
+
+	wg.Wait()
+	return nil
+}
+
+func purgeAll(config options.Config) error {
+	for name := range config.Providers {
+		err := purgeProvider(name, config)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func removeOvpnConfig(ovpnConfig *string) {
@@ -132,6 +193,22 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 
 func main() {
 	arguments := options.ParseArguments(os.Args)
+	var configPath string
+
+	if arguments.DebugMode {
+		configPath = "./config.yml"
+	} else {
+		exe, err := os.Executable()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		configPath = filepath.Dir(exe) + "/config.yml"
+	}
+
+	config, err := options.ReadConfig(configPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	if arguments.ShowHelp {
 		fmt.Println(usage)
@@ -146,37 +223,34 @@ func main() {
 			fmt.Println(provider)
 		}
 		os.Exit(0)
+
+	} else if arguments.Purge && len(arguments.Provider) == 0 {
+		err := purgeAll(*config)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		os.Exit(0)
 	}
 
-	provider, err := providers.New(arguments.Provider)
+	provider, err := getProvider(arguments.Provider)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	if arguments.ShowRegions {
-		err := showRegions(provider)
+		err = showRegions(provider)
 		if err != nil {
 			log.Fatalln(err)
 		}
+
+	} else if arguments.Purge {
+		err = purgeProvider(arguments.Provider, *config)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 	} else {
-		var configPath string
-
-		if arguments.DebugMode {
-			configPath = "./config.yml"
-		} else {
-			exe, err := os.Executable()
-			if err != nil {
-				log.Fatalln(err)
-			}
-			configPath = filepath.Dir(exe) + "/config.yml"
-		}
-
-		conf, err := options.ReadConfig(configPath)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		err = provisionAndConnect(provider, arguments, *conf)
+		err = provisionAndConnect(provider, arguments, *config)
 		if err != nil {
 			log.Fatalln(err)
 		}
