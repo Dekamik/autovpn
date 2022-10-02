@@ -4,7 +4,7 @@ type Arguments struct {
 	Provider    string
 	Region      string
 	Purge       bool
-	ShowZombies bool
+	ListZombies bool
 
 	DebugMode    bool
 	NoAdminCheck bool
@@ -46,7 +46,7 @@ func ParseArguments(argv []string) Arguments {
 			arguments.Purge = true
 
 		case "zombies":
-			arguments.ShowZombies = true
+			arguments.ListZombies = true
 
 		default:
 			if len(arguments.Provider) == 0 {
