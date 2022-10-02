@@ -1,8 +1,10 @@
 package options
 
 type Arguments struct {
-	Provider string
-	Region   string
+	Provider    string
+	Region      string
+	Purge       bool
+	ShowZombies bool
 
 	DebugMode    bool
 	NoAdminCheck bool
@@ -31,14 +33,20 @@ func ParseArguments(argv []string) Arguments {
 		case "--version":
 			return Arguments{ShowVersion: true}
 
-		case "providers":
-			return Arguments{ShowProviders: true}
-
 		case "--debug":
 			arguments.DebugMode = true
 
 		case "--no-admin-check":
 			arguments.NoAdminCheck = true
+
+		case "providers":
+			return Arguments{ShowProviders: true}
+
+		case "purge":
+			arguments.Purge = true
+
+		case "zombies":
+			arguments.ShowZombies = true
 
 		default:
 			if len(arguments.Provider) == 0 {

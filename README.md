@@ -80,9 +80,13 @@ OpenVPN must be run as administrator/root.
 ```
 Usage: autovpn <provider> <region>  Provision a VPN server at <provider> on <region> and connects to it
        autovpn <provider> purge     Purges all AutoVPN servers at provider
+       autovpn <provider> zombies   Shows all zombie servers at provider
        autovpn <provider>           Lists all regions at <provider>
+       
        autovpn providers            Lists all available providers
        autovpn purge                Purges all AutoVPN servers at all providers
+       autovpn zombies              Shows all zombie servers at all providers
+       
        autovpn (-h | --help)        Shows further help and options
        autovpn --version            Shows binary version
 ```
