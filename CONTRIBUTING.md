@@ -1,11 +1,22 @@
 # Contributing
 
-# Debugging options
+# Debugging arguments
 
-| Option             | Description                           |
+| Flag               | Description                           |
 |--------------------|---------------------------------------|
 | `--debug`          | Tell the program to run in debug mode | 
 | `--no-admin-check` | Bypass admin check                    |
+
+## Debug mode
+
+Tells the program that we're running this program as a developer, which does this:
+* Uses the `config.yml` in the repository root directory, not the executables' directory.
+  This is necessary when debugging from an IDE, as those binaries usually exist in a temporary directory.
+
+## No admin check
+
+Setting this flag bypasses checking if the program is run as root/admin. 
+This is handy when debugging from an IDE.
 
 # Adding providers
 

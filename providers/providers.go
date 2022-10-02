@@ -32,7 +32,7 @@ type Provider interface {
 	// GetRegions downloads available server regions for the provider.
 	GetRegions() ([]Region, error)
 
-	// GetServers downloads all AutoVPN instances at the provider.
+	// GetInstances downloads all AutoVPN instances at the provider.
 	GetInstances(config options.Config) ([]Instance, error)
 
 	// CreateServer creates, provisions and boots the server in the cloud.
