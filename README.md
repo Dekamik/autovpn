@@ -9,8 +9,10 @@ disconnect from the session.
 ## Table of content
 - [1. Setup](#setup)
     - [1.1 Install OpenVPN](#1-install-openvpn)
-    - [1.2 Download binary](#2-download-binary)
-    - [1.3 Unzip archive and run](#3-unzip-archive-and-run)
+    - [1.2 Create an account at Linode](#2-create-an-account-at-linode)
+    - [1.3 Download binary](#3-download-binary)
+    - [1.4 Unzip archive and run](#4-unzip-archive-and-configure-configyml)
+    - [1.5 Run](#5-run)
 - [2. Configuration](#configuration)
 - [3. Usage](#usage)
 
@@ -25,7 +27,11 @@ the "OpenVPN" CLI tool.
 If you're on Windows, you should find installers etc. here:
 https://openvpn.net/community-downloads/
 
-## 2: Download binary
+## 2: Create an account at Linode
+
+UNDER CONSTRUCTION
+
+## 3: Download binary
 
 Go to [Releases](https://github.com/Dekamik/autovpn/releases) and download the appropriate binary for your operating
 system and architecture.
@@ -42,11 +48,11 @@ system and architecture.
 * amd64 = most 64-bit computers
 * arm64 = Apple M-series (M1, M2 etc.)
 
-## 3: Unzip archive and configure `config.yml`
+## 4: Unzip archive and configure `config.yml`
 
 Copy the `default.config.yml` and setup according to [Configuration](#configuration) below.
 
-## 4: Run
+## 5: Run
 
 To get started, refer to [Usage](#usage) below, or run `autovpn --help`
 
