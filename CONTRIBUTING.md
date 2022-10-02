@@ -14,3 +14,4 @@ You can add additional providers by following these steps:
 2. Create a struct for that providers with the Provider struct embedded 
 3. Implement all Provider functions. (Check `linode.go` for reference)
 4. Add provider name and struct in `providers.availableProviders`
+5. Add provider to `default.config.yml`
