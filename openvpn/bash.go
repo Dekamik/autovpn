@@ -3,7 +3,6 @@
 package openvpn
 
 import (
-	"errors"
 	"os/exec"
 )
 
@@ -12,8 +11,7 @@ func IsInstalled(executable string) bool {
 	// If it's not installed, it returns a regular Error type.
 	cmd := exec.Command(executable, "--version")
 	err := cmd.Run()
-	target := &exec.ExitError{}
-	return errors.As(err, &target)
+	return err == nil
 }
 
 func GetExecutable(executableOverride string) string {
