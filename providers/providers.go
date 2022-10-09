@@ -11,7 +11,7 @@ const (
 
 // Add implemented providers here.
 var availableProviders = map[string]Provider{
-	"aws":    AWS{},
+	//"aws":    AWS{},
 	"linode": Linode{},
 }
 
