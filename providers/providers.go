@@ -11,6 +11,7 @@ const (
 
 // Add implemented providers here.
 var availableProviders = map[string]Provider{
+	//"aws":    AWS{},
 	"linode": Linode{},
 }
 
@@ -28,24 +29,30 @@ type Instance struct {
 	Tags      []string
 }
 
-type Provider interface {
-	// GetRegions downloads available server regions for the provider.
-	GetRegions() ([]Region, error)
-
-	// GetInstances downloads all AutoVPN instances at the provider.
-	GetInstances(config options.Config) ([]Instance, error)
-
-	// CreateServer creates, provisions and boots the server in the cloud.
-	CreateServer(arguments options.Arguments, config options.Config) (*Instance, error)
-
-	// AwaitProvisioning blocks the thread until the server is ready to receive SSH connections.
-	AwaitProvisioning(instance Instance, token string) error
-
-	// DestroyServer destroys the server.
-	DestroyServer(instance Instance, token string) error
+type ProviderArgs struct {
+	Config    options.Config
+	Arguments options.Arguments
+	Instance  Instance
 }
 
-func New(name string) (Provider, error) {
+type Provider interface {
+	// GetRegions downloads available server regions for the provider.
+	GetRegions(args ProviderArgs) ([]Region, error)
+
+	// GetInstances downloads all AutoVPN instances at the provider.
+	GetInstances(args ProviderArgs) ([]Instance, error)
+
+	// CreateServer creates, provisions and boots the server in the cloud.
+	CreateServer(args ProviderArgs) (*Instance, error)
+
+	// AwaitProvisioning blocks the thread until the server is ready to receive SSH connections.
+	AwaitProvisioning(args ProviderArgs) error
+
+	// DestroyServer destroys the server.
+	DestroyServer(args ProviderArgs) error
+}
+
+func NewProvider(name string) (Provider, error) {
 	provider := availableProviders[name]
 
 	if provider == nil {

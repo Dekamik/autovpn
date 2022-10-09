@@ -28,25 +28,32 @@ func ParseArguments(argv []string) Arguments {
 
 		case "--help":
 		case "-h":
-			return Arguments{ShowHelp: true}
+			arguments.ShowHelp = true
+			break
 
 		case "--version":
-			return Arguments{ShowVersion: true}
+			arguments.ShowVersion = true
+			break
 
 		case "--debug":
 			arguments.DebugMode = true
+			break
 
 		case "--no-admin-check":
 			arguments.NoAdminCheck = true
+			break
 
 		case "providers":
-			return Arguments{ShowProviders: true}
+			arguments.ShowProviders = true
+			break
 
 		case "purge":
 			arguments.Purge = true
+			break
 
 		case "zombies":
 			arguments.ListZombies = true
+			break
 
 		default:
 			if len(arguments.Provider) == 0 {
@@ -54,7 +61,12 @@ func ParseArguments(argv []string) Arguments {
 			} else {
 				arguments.Region = arg
 			}
+			break
 		}
+	}
+
+	if len(arguments.Region) == 0 {
+		arguments.ShowRegions = true
 	}
 
 	return arguments

@@ -2,7 +2,6 @@ package providers
 
 import (
 	"autovpn/helpers"
-	"autovpn/options"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -32,7 +31,7 @@ type listRes struct {
 	Data []instanceRes
 }
 
-func (l Linode) GetRegions() ([]Region, error) {
+func (l Linode) GetRegions(_ ProviderArgs) ([]Region, error) {
 	client := http.Client{}
 	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/regions", nil)
 	if err != nil {
@@ -63,9 +62,9 @@ func (l Linode) GetRegions() ([]Region, error) {
 	return regions, nil
 }
 
-func (l Linode) GetInstances(config options.Config) ([]Instance, error) {
+func (l Linode) GetInstances(args ProviderArgs) ([]Instance, error) {
 	client := http.Client{}
-	conf := config.Providers["linode"]
+	conf := args.Config.Providers["linode"]
 
 	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/linode/instances/", nil)
 	if err != nil {
@@ -103,9 +102,10 @@ func (l Linode) GetInstances(config options.Config) ([]Instance, error) {
 	return instances, nil
 }
 
-func (l Linode) CreateServer(arguments options.Arguments, config options.Config) (*Instance, error) {
+func (l Linode) CreateServer(args ProviderArgs) (*Instance, error) {
 	client := http.Client{}
-	conf := config.Providers[arguments.Provider]
+	config := args.Config.Providers[args.Arguments.Provider]
+
 	rootPass, err := helpers.GeneratePassword(64)
 	if err != nil {
 		return nil, err
@@ -113,13 +113,13 @@ func (l Linode) CreateServer(arguments options.Arguments, config options.Config)
 
 	var jsonData = []byte(
 		fmt.Sprintf("{\"image\":\"%s\",\"region\":\"%s\",\"root_pass\":\"%s\",\"tags\":[\"%s\"],\"type\":\"%s\"}",
-			conf.Image, arguments.Region, rootPass, InstanceTag, conf.TypeSlug))
+			config.Image, args.Arguments.Region, rootPass, InstanceTag, config.TypeSlug))
 
 	req, err := http.NewRequest(http.MethodPost, "https://api.linode.com/v4/linode/instances", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("server creation caused error: %w", err)
 	}
-	req.Header.Set("Authorization", "Bearer "+conf.Key)
+	req.Header.Set("Authorization", "Bearer "+config.Key)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Dekamik/autovpn")
 
@@ -149,9 +149,11 @@ func (l Linode) CreateServer(arguments options.Arguments, config options.Config)
 	return instance, nil
 }
 
-func (l Linode) AwaitProvisioning(instance Instance, token string) error {
+func (l Linode) AwaitProvisioning(args ProviderArgs) error {
+	token := args.Config.Providers["linode"].Key
 	client := http.Client{}
-	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/linode/instances/"+instance.Id, nil)
+
+	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/linode/instances/"+args.Instance.Id, nil)
 	if err != nil {
 		return fmt.Errorf("server check caused error: %w", err)
 	}
@@ -180,9 +182,11 @@ func (l Linode) AwaitProvisioning(instance Instance, token string) error {
 	}
 }
 
-func (l Linode) DestroyServer(instance Instance, token string) error {
+func (l Linode) DestroyServer(args ProviderArgs) error {
+	token := args.Config.Providers["linode"].Key
 	client := http.Client{}
-	req, err := http.NewRequest(http.MethodDelete, "https://api.linode.com/v4/linode/instances/"+instance.Id, nil)
+
+	req, err := http.NewRequest(http.MethodDelete, "https://api.linode.com/v4/linode/instances/"+args.Instance.Id, nil)
 	if err != nil {
 		return fmt.Errorf("server destruction caused error: %w", err)
 	}
