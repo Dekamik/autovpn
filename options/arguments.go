@@ -40,7 +40,7 @@ func ParseArguments(argv []string) Arguments {
 			arguments.NoAdminCheck = true
 
 		case "providers":
-			return Arguments{ShowProviders: true}
+			arguments.ShowProviders = true
 
 		case "purge":
 			arguments.Purge = true
@@ -55,6 +55,10 @@ func ParseArguments(argv []string) Arguments {
 				arguments.Region = arg
 			}
 		}
+	}
+
+	if len(arguments.Region) == 0 {
+		arguments.ShowRegions = true
 	}
 
 	return arguments

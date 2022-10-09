@@ -12,7 +12,7 @@ import (
 )
 
 func getProvider(name string) (providers.Provider, error) {
-	provider, err := providers.New(name)
+	provider, err := providers.NewProvider(name)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +20,7 @@ func getProvider(name string) (providers.Provider, error) {
 }
 
 func showRegions(provider providers.Provider) error {
-	regions, err := provider.GetRegions()
+	regions, err := provider.GetRegions(providers.ProviderArgs{})
 	if err != nil {
 		return err
 	}
@@ -32,12 +32,16 @@ func showRegions(provider providers.Provider) error {
 	return nil
 }
 
-func destroyServer(provider providers.Provider, server providers.Instance, key string) {
+func destroyServer(provider providers.Provider, server providers.Instance, config options.Config) {
 	finish := make(chan bool)
 	exited := make(chan bool)
 
 	go helpers.WaitPrint("Destroying server", finish, exited)
-	err := provider.DestroyServer(server, key)
+	err := provider.DestroyServer(
+		providers.ProviderArgs{
+			Config:   config,
+			Instance: server,
+		})
 	finish <- true
 	<-exited
 	if err != nil {
@@ -51,7 +55,7 @@ func purgeProvider(providerName string, config options.Config) error {
 		return err
 	}
 
-	instances, err := provider.GetInstances(config)
+	instances, err := provider.GetInstances(providers.ProviderArgs{Config: config})
 	if err != nil {
 		return err
 	}
@@ -73,7 +77,11 @@ func purgeProvider(providerName string, config options.Config) error {
 		wg.Add(1)
 		go func(instance providers.Instance) {
 			log.Printf("Purging %s %s...", providerName, instance.Id)
-			err := provider.DestroyServer(instance, config.Providers[providerName].Key)
+			err := provider.DestroyServer(
+				providers.ProviderArgs{
+					Config:   config,
+					Instance: instance,
+				})
 			if err != nil {
 				log.Fatalf("Purge ERR %s %s: %s", providerName, instance.Id, err.Error())
 			}
@@ -102,7 +110,7 @@ func listZombies(providerName string, config options.Config) error {
 		return err
 	}
 
-	instances, err := provider.GetInstances(config)
+	instances, err := provider.GetInstances(providers.ProviderArgs{Config: config})
 	if err != nil {
 		return err
 	}
@@ -151,24 +159,31 @@ func provisionAndConnect(provider providers.Provider, arguments options.Argument
 		return fmt.Errorf("couldn't find OpenVPN exe (%s). OpenVPN must be installed", exe)
 	}
 
-	key := config.Providers[arguments.Provider].Key
 	finish := make(chan bool)
 	exited := make(chan bool)
 
 	go helpers.WaitPrint("Creating instance", finish, exited)
-	instance, err := provider.CreateServer(arguments, config)
+	instance, err := provider.CreateServer(
+		providers.ProviderArgs{
+			Config:    config,
+			Arguments: arguments,
+		})
 	finish <- true
 	<-exited
 	if err != nil {
 		if instance != nil {
-			destroyServer(provider, *instance, key)
+			destroyServer(provider, *instance, config)
 		}
 		return err
 	}
-	defer destroyServer(provider, *instance, key)
+	defer destroyServer(provider, *instance, config)
 
 	go helpers.WaitPrint("Starting instance", finish, exited)
-	err = provider.AwaitProvisioning(*instance, key)
+	err = provider.AwaitProvisioning(
+		providers.ProviderArgs{
+			Config:   config,
+			Instance: *instance,
+		})
 	finish <- true
 	<-exited
 	if err != nil {
