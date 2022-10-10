@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"autovpn/data"
 	"autovpn/helpers"
 	"bytes"
 	"encoding/json"
@@ -10,7 +11,7 @@ import (
 )
 
 type Linode struct {
-	Provider
+	Client
 }
 
 type regionRes struct {
@@ -31,7 +32,7 @@ type listRes struct {
 	Data []instanceRes
 }
 
-func (l Linode) GetRegions(_ ProviderArgs) ([]Region, error) {
+func (l Linode) getRegions(args ClientArgs) ([]Region, error) {
 	client := http.Client{}
 	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/regions", nil)
 	if err != nil {
@@ -62,7 +63,7 @@ func (l Linode) GetRegions(_ ProviderArgs) ([]Region, error) {
 	return regions, nil
 }
 
-func (l Linode) GetInstances(args ProviderArgs) ([]Instance, error) {
+func (l Linode) getInstances(args ClientArgs) ([]data.Instance, error) {
 	client := http.Client{}
 	conf := args.Config.Providers["linode"]
 
@@ -88,13 +89,13 @@ func (l Linode) GetInstances(args ProviderArgs) ([]Instance, error) {
 		return nil, fmt.Errorf("server list caused error: %w", err)
 	}
 
-	instances := make([]Instance, len(body.Data))
+	instances := make([]data.Instance, len(body.Data))
 	for i, instance := range body.Data {
-		instances[i] = Instance{
+		instances[i] = data.Instance{
 			Id:        fmt.Sprintf("%f", instance.Id),
 			IpAddress: "",
-			RootUser:  "root",
-			RootPass:  "",
+			User:      "root",
+			Pass:      "",
 			SshPort:   22,
 			Tags:      instance.Tags,
 		}
@@ -102,7 +103,7 @@ func (l Linode) GetInstances(args ProviderArgs) ([]Instance, error) {
 	return instances, nil
 }
 
-func (l Linode) CreateServer(args ProviderArgs) (*Instance, error) {
+func (l Linode) createServer(args ClientArgs) (*data.Instance, error) {
 	client := http.Client{}
 	config := args.Config.Providers[args.Arguments.Provider]
 
@@ -138,18 +139,18 @@ func (l Linode) CreateServer(args ProviderArgs) (*Instance, error) {
 		return nil, fmt.Errorf("server creation caused error: %w", err)
 	}
 
-	instance := &Instance{
+	instance := &data.Instance{
 		Id:        fmt.Sprintf("%f", body.Id),
 		IpAddress: body.Ipv4[0],
-		RootUser:  "root",
-		RootPass:  rootPass,
+		User:      "root",
+		Pass:      rootPass,
 		SshPort:   22,
 	}
 
 	return instance, nil
 }
 
-func (l Linode) AwaitProvisioning(args ProviderArgs) error {
+func (l Linode) awaitProvisioning(args ClientArgs) error {
 	token := args.Config.Providers["linode"].Key
 	client := http.Client{}
 
@@ -182,7 +183,7 @@ func (l Linode) AwaitProvisioning(args ProviderArgs) error {
 	}
 }
 
-func (l Linode) DestroyServer(args ProviderArgs) error {
+func (l Linode) destroyServer(args ClientArgs) error {
 	token := args.Config.Providers["linode"].Key
 	client := http.Client{}
 
@@ -201,5 +202,10 @@ func (l Linode) DestroyServer(args ProviderArgs) error {
 		return fmt.Errorf("server destruction returned %d %s", res.StatusCode, res.Status)
 	}
 
+	return nil
+}
+
+func (l Linode) connect(_ ClientArgs) error {
+	// Nothing needs to be done
 	return nil
 }

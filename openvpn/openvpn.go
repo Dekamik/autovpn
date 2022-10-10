@@ -1,7 +1,7 @@
 package openvpn
 
 import (
-	"autovpn/providers"
+	"autovpn/data"
 	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -22,11 +22,11 @@ func dial(network string, addr string, config *ssh.ClientConfig, maxTries int, c
 	return sshClient, nil
 }
 
-func Install(instance providers.Instance, installScriptUrl string) (*string, error) {
+func Install(instance data.Instance, installScriptUrl string) (*string, error) {
 	configPath := "client.ovpn"
 	config := &ssh.ClientConfig{
-		User:            instance.RootUser,
-		Auth:            []ssh.AuthMethod{ssh.Password(instance.RootPass)},
+		User:            instance.User,
+		Auth:            []ssh.AuthMethod{ssh.Password(instance.Pass)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 

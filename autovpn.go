@@ -36,6 +36,36 @@ Options:
 
 var version = "DEVELOPMENT_BUILD"
 
+func purgeAll(args providers.ClientArgs) error {
+	for _, providerName := range providers.ListProviders() {
+		provider, err := providers.New(providerName, args)
+		if err != nil {
+			return err
+		}
+
+		err = provider.Purge()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func listAllZombies(args providers.ClientArgs) error {
+	for _, providerName := range providers.ListProviders() {
+		provider, err := providers.New(providerName, args)
+		if err != nil {
+			return err
+		}
+
+		err = provider.Purge()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func main() {
 	arguments := options.ParseArguments(os.Args)
 	var configPath string
@@ -69,46 +99,53 @@ func main() {
 		}
 		os.Exit(0)
 
-	} else if arguments.Purge && len(arguments.Provider) == 0 {
-		err = purgeAll(*config)
+	}
+
+	args := providers.ClientArgs{
+		Config:    *config,
+		Arguments: arguments,
+	}
+
+	if arguments.Purge && len(arguments.Provider) == 0 {
+		err = purgeAll(args)
 		if err != nil {
 			log.Fatalln(err)
 		}
 		os.Exit(0)
 
 	} else if arguments.ListZombies && len(arguments.Provider) == 0 {
-		err = listAllZombies(*config)
+		err = listAllZombies(args)
 		if err != nil {
 			log.Fatalln(err)
 		}
 		os.Exit(0)
 	}
 
-	provider, err := getProvider(arguments.Provider)
+	provider, err := providers.New(arguments.Provider, args)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	if arguments.ShowRegions {
-		err = showRegions(provider)
+		err = provider.ShowRegions()
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 	} else if arguments.Purge {
-		err = purgeProvider(arguments.Provider, *config)
+		err = provider.Purge()
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 	} else if arguments.ListZombies {
-		err = listZombies(arguments.Provider, *config)
+		err = provider.ListZombies()
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 	} else {
-		err = provisionAndConnect(provider, arguments, *config)
+		err = provider.Connect()
 		if err != nil {
 			log.Fatalln(err)
 		}

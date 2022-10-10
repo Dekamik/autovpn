@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"autovpn/data"
 	"autovpn/options"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -9,7 +10,7 @@ import (
 )
 
 type AWS struct {
-	Provider
+	Client
 }
 
 type AWSOptions struct {
@@ -24,27 +25,27 @@ func getClient(avpnConfig options.Config) (*ec2.Client, error) {
 	return ec2.NewFromConfig(cfg), nil
 }
 
-func (A AWS) GetRegions(args ProviderArgs) ([]Region, error) {
+func (A AWS) getRegions(args ClientArgs) ([]Region, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) GetInstances(args ProviderArgs) ([]Instance, error) {
+func (A AWS) getInstances(args ClientArgs) ([]data.Instance, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) CreateServer(args ProviderArgs) (*Instance, error) {
+func (A AWS) createServer(args ClientArgs) (*data.Instance, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) AwaitProvisioning(args ProviderArgs) error {
+func (A AWS) awaitProvisioning(args ClientArgs) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) DestroyServer(args ProviderArgs) error {
+func (A AWS) destroyServer(args ClientArgs) error {
 	//TODO implement me
 	panic("implement me")
 }
