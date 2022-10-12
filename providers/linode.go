@@ -32,7 +32,7 @@ type listRes struct {
 	Data []instanceRes
 }
 
-func (l Linode) getRegions(args ClientArgs) ([]Region, error) {
+func (l Linode) getRegions(args data.ArgsBundle) ([]Region, error) {
 	client := http.Client{}
 	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/regions", nil)
 	if err != nil {
@@ -63,7 +63,7 @@ func (l Linode) getRegions(args ClientArgs) ([]Region, error) {
 	return regions, nil
 }
 
-func (l Linode) getInstances(args ClientArgs) ([]data.Instance, error) {
+func (l Linode) getInstances(args data.ArgsBundle) ([]data.Instance, error) {
 	client := http.Client{}
 	conf := args.Config.Providers["linode"]
 
@@ -103,7 +103,7 @@ func (l Linode) getInstances(args ClientArgs) ([]data.Instance, error) {
 	return instances, nil
 }
 
-func (l Linode) createServer(args ClientArgs) (*data.Instance, error) {
+func (l Linode) createServer(args data.ArgsBundle) (*data.Instance, error) {
 	client := http.Client{}
 	config := args.Config.Providers[args.Arguments.Provider]
 
@@ -150,7 +150,7 @@ func (l Linode) createServer(args ClientArgs) (*data.Instance, error) {
 	return instance, nil
 }
 
-func (l Linode) awaitProvisioning(args ClientArgs) error {
+func (l Linode) awaitProvisioning(args data.ArgsBundle) error {
 	token := args.Config.Providers["linode"].Key
 	client := http.Client{}
 
@@ -183,7 +183,7 @@ func (l Linode) awaitProvisioning(args ClientArgs) error {
 	}
 }
 
-func (l Linode) destroyServer(args ClientArgs) error {
+func (l Linode) destroyServer(args data.ArgsBundle) error {
 	token := args.Config.Providers["linode"].Key
 	client := http.Client{}
 
@@ -205,7 +205,7 @@ func (l Linode) destroyServer(args ClientArgs) error {
 	return nil
 }
 
-func (l Linode) connect(_ ClientArgs) error {
+func (l Linode) connect(_ data.ArgsBundle) error {
 	// Nothing needs to be done
 	return nil
 }

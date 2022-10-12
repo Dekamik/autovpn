@@ -1,7 +1,7 @@
 package main
 
 import (
-	"autovpn/options"
+	"autovpn/data"
 	"autovpn/providers"
 	"fmt"
 	"log"
@@ -36,7 +36,7 @@ Options:
 
 var version = "DEVELOPMENT_BUILD"
 
-func purgeAll(args providers.ClientArgs) error {
+func purgeAll(args data.ArgsBundle) error {
 	for _, providerName := range providers.ListProviders() {
 		provider, err := providers.New(providerName, args)
 		if err != nil {
@@ -51,7 +51,7 @@ func purgeAll(args providers.ClientArgs) error {
 	return nil
 }
 
-func listAllZombies(args providers.ClientArgs) error {
+func listAllZombies(args data.ArgsBundle) error {
 	for _, providerName := range providers.ListProviders() {
 		provider, err := providers.New(providerName, args)
 		if err != nil {
@@ -67,11 +67,12 @@ func listAllZombies(args providers.ClientArgs) error {
 }
 
 func main() {
-	arguments := options.ParseArguments(os.Args)
+	arguments := data.ParseArguments(os.Args)
 	var configPath string
 
 	if arguments.DebugMode {
 		configPath = "./config.yml"
+
 	} else {
 		exe, err := os.Executable()
 		if err != nil {
@@ -80,7 +81,7 @@ func main() {
 		configPath = filepath.Dir(exe) + "/config.yml"
 	}
 
-	config, err := options.ReadConfig(configPath)
+	config, err := data.ReadConfig(configPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -98,10 +99,9 @@ func main() {
 			fmt.Println(provider)
 		}
 		os.Exit(0)
-
 	}
 
-	args := providers.ClientArgs{
+	args := data.ArgsBundle{
 		Config:    *config,
 		Arguments: arguments,
 	}
@@ -131,25 +131,27 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
+		os.Exit(0)
 
 	} else if arguments.Purge {
 		err = provider.Purge()
 		if err != nil {
 			log.Fatalln(err)
 		}
+		os.Exit(0)
 
 	} else if arguments.ListZombies {
 		err = provider.ListZombies()
 		if err != nil {
 			log.Fatalln(err)
 		}
+		os.Exit(0)
 
 	} else {
 		err = provider.Connect()
 		if err != nil {
 			log.Fatalln(err)
 		}
+		os.Exit(0)
 	}
-
-	os.Exit(0)
 }

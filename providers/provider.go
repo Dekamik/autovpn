@@ -24,10 +24,10 @@ type ProviderInterface interface {
 
 type Provider struct {
 	client Client
-	args   ClientArgs
+	args   data.ArgsBundle
 }
 
-func destroyServer(client Client, args ClientArgs) {
+func destroyServer(client Client, args data.ArgsBundle) {
 	finish := make(chan bool)
 	exited := make(chan bool)
 
@@ -172,7 +172,7 @@ func (p Provider) ShowRegions() error {
 	return nil
 }
 
-func New(providerName string, args ClientArgs) (*Provider, error) {
+func New(providerName string, args data.ArgsBundle) (*Provider, error) {
 	client, err := newClient(providerName, args)
 	if err != nil {
 		return nil, err

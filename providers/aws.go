@@ -2,7 +2,6 @@ package providers
 
 import (
 	"autovpn/data"
-	"autovpn/options"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
@@ -16,7 +15,7 @@ type AWS struct {
 type AWSOptions struct {
 }
 
-func getClient(avpnConfig options.Config) (*ec2.Client, error) {
+func getClient(avpnConfig data.Config) (*ec2.Client, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("", "", "")))
 	if err != nil {
@@ -25,27 +24,27 @@ func getClient(avpnConfig options.Config) (*ec2.Client, error) {
 	return ec2.NewFromConfig(cfg), nil
 }
 
-func (A AWS) getRegions(args ClientArgs) ([]Region, error) {
+func (A AWS) getRegions(args data.ArgsBundle) ([]Region, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) getInstances(args ClientArgs) ([]data.Instance, error) {
+func (A AWS) getInstances(args data.ArgsBundle) ([]data.Instance, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) createServer(args ClientArgs) (*data.Instance, error) {
+func (A AWS) createServer(args data.ArgsBundle) (*data.Instance, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) awaitProvisioning(args ClientArgs) error {
+func (A AWS) awaitProvisioning(args data.ArgsBundle) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) destroyServer(args ClientArgs) error {
+func (A AWS) destroyServer(args data.ArgsBundle) error {
 	//TODO implement me
 	panic("implement me")
 }
