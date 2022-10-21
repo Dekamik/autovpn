@@ -140,7 +140,7 @@ func (l Linode) createServer(args data.ArgsBundle) (*data.Instance, error) {
 	}
 
 	instance := &data.Instance{
-		Id:        fmt.Sprintf("%f", body.Id),
+		Id:        fmt.Sprintf("%.0f", body.Id),
 		IpAddress: body.Ipv4[0],
 		User:      "root",
 		Pass:      rootPass,
@@ -208,4 +208,17 @@ func (l Linode) destroyServer(args data.ArgsBundle) error {
 func (l Linode) connect(_ data.ArgsBundle) error {
 	// Nothing needs to be done
 	return nil
+}
+
+func (l Linode) getFailSafeSetup(args data.ArgsBundle) ([]string, error) {
+	commands := []string{
+		l.refreshFailSafeCron(args),
+	}
+	return commands, nil
+}
+
+func (l Linode) refreshFailSafeCron(args data.ArgsBundle) string {
+	return fmt.Sprintf(
+		"echo \"$(date +%%M) $(($(($(date +%%H) + %d)) %% 24)) * * * curl -H 'Authorization: Bearer %s' -X DELETE https://api.linode.com/v4/linode/instances/%s\" > /etc/crontab",
+		args.Config.Agent.ServerTtlHours, args.Config.Providers["linode"].Key, args.Instance.Id)
 }

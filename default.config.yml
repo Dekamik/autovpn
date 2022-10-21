@@ -1,5 +1,6 @@
 agent:
   script_url: https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+  server_ttl_hours: 2
 
 providers:
   linode:

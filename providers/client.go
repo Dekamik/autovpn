@@ -35,8 +35,14 @@ type Client interface {
 	// destroyServer destroys the server.
 	destroyServer(args data.ArgsBundle) error
 
-	// connect
+	// connect is a helper method that provisions and connects to a provider's client, if required (example: AWS Client)
 	connect(args data.ArgsBundle) error
+
+	// getFailSafeSetup returns the required bash commands to set up automatic deletion on server
+	getFailSafeSetup(args data.ArgsBundle) ([]string, error)
+
+	// getFailSafeCron return a new refreshed cron command for deleting server
+	refreshFailSafeCron(args data.ArgsBundle) string
 }
 
 func newClient(providerName string, args data.ArgsBundle) (*Client, error) {

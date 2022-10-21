@@ -22,7 +22,7 @@ func dial(network string, addr string, config *ssh.ClientConfig, maxTries int, c
 	return sshClient, nil
 }
 
-func Install(instance data.Instance, installScriptUrl string) (*string, error) {
+func Install(instance data.Instance, installScriptUrl string, setupDelete []string) (*string, error) {
 	configPath := "client.ovpn"
 	config := &ssh.ClientConfig{
 		User:            instance.User,
@@ -58,8 +58,12 @@ func Install(instance data.Instance, installScriptUrl string) (*string, error) {
 		"chmod +x openvpn-install.sh",
 		"export AUTO_INSTALL=y; ./openvpn-install.sh",
 		"sed -i 's/^verb [0-9]*$/verb 0/g' /etc/openvpn/server.conf",
-		"exit",
 	}
+
+	if setupDelete != nil {
+		commands = append(commands, setupDelete...)
+	}
+	commands = append(commands, "exit")
 
 	for _, cmd := range commands {
 		_, err = fmt.Fprintf(stdin, "%s\n", cmd)
