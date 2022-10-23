@@ -139,7 +139,8 @@ func Connect(executable string, ovpnConfig string, setupTimeout []string, instan
 	lastTimeoutSetup := time.Now()
 
 	for waiting {
-		// TODO: Add a timeout
+		time.Sleep(time.Millisecond * 200)
+
 		if time.Since(lastTimeoutSetup) >= time.Minute*30 {
 			config := &ssh.ClientConfig{
 				User:            instance.User,
