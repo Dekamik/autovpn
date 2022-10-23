@@ -216,7 +216,7 @@ func (l Linode) connect(_ data.ArgsBundle) error {
 	return nil
 }
 
-func (l Linode) failSafeSetup(args data.ArgsBundle) ([]string, error) {
+func (l Linode) timeoutSetup(args data.ArgsBundle) ([]string, error) {
 	commands := []string{
 		fmt.Sprintf(
 			"echo \"$(date +%%M) $(($(($(date +%%H) + %d)) %% 24)) * * * /usr/bin/env curl -H 'Authorization: Bearer %s' -X DELETE https://api.linode.com/v4/linode/instances/%s\" > /etc/crontab",

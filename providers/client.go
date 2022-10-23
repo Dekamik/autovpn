@@ -39,7 +39,7 @@ type Client interface {
 	connect(args data.ArgsBundle) error
 
 	// failSafeSetup returns the required bash commands to set up automatic deletion on server
-	failSafeSetup(args data.ArgsBundle) ([]string, error)
+	timeoutSetup(args data.ArgsBundle) ([]string, error)
 }
 
 func newClient(providerName string, args data.ArgsBundle) (*Client, error) {
