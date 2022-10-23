@@ -219,8 +219,8 @@ func (l Linode) connect(_ data.ArgsBundle) error {
 func (l Linode) timeoutSetup(args data.ArgsBundle) ([]string, error) {
 	commands := []string{
 		fmt.Sprintf(
-			"echo \"$(date +%%M) $(($(($(date +%%H) + %d)) %% 24)) * * * /usr/bin/env curl -H 'Authorization: Bearer %s' -X DELETE https://api.linode.com/v4/linode/instances/%s\" > /etc/crontab",
-			args.Config.Agent.ServerTtlHours, args.Config.Providers["linode"].Key, args.Instance.Id),
+			"echo \"$(date +%%M) $(($(($(date +%%H) + 1)) %% 24)) * * * /usr/bin/env curl -H 'Authorization: Bearer %s' -X DELETE https://api.linode.com/v4/linode/instances/%s\" > /etc/crontab",
+			args.Config.Providers["linode"].Key, args.Instance.Id),
 		"crontab /etc/crontab",
 	}
 	return commands, nil

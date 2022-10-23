@@ -9,8 +9,7 @@ import (
 
 type Config struct {
 	Agent struct {
-		ScriptUrl      string `yaml:"script_url"`
-		ServerTtlHours int    `yaml:"server_ttl_hours"`
+		ScriptUrl string `yaml:"script_url"`
 	}
 	Overrides struct {
 		OpenvpnExe string `yaml:"openvpn_exe"`
