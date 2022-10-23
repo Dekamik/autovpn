@@ -91,7 +91,8 @@ func (p Provider) Connect() error {
 	}
 
 	go helpers.WaitPrint("Installing OpenVPN Server", finish, exited)
-	ovpnConfig, err := openvpn.Install(*instance, p.args.Config.Agent.ScriptUrl)
+	timeoutSetup, err := p.client.timeoutSetup(p.args)
+	ovpnConfig, err := openvpn.Install(*instance, p.args.Config.Agent.ScriptUrl, timeoutSetup)
 	finish <- true
 	<-exited
 	if err != nil {
@@ -99,7 +100,7 @@ func (p Provider) Connect() error {
 	}
 	defer removeOvpnConfig(ovpnConfig)
 
-	err = openvpn.Connect(exe, *ovpnConfig)
+	err = openvpn.Connect(exe, *ovpnConfig, timeoutSetup, *instance)
 	if err != nil {
 		return err
 	}

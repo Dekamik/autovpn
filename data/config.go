@@ -13,6 +13,7 @@ type Config struct {
 	}
 	Overrides struct {
 		OpenvpnExe string `yaml:"openvpn_exe"`
+		RootPass   string `yaml:"root_pass"`
 	}
 	Providers map[string]struct {
 		Image    string
