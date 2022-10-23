@@ -107,9 +107,15 @@ func (l Linode) createServer(args data.ArgsBundle) (*data.Instance, error) {
 	client := http.Client{}
 	config := args.Config.Providers[args.Arguments.Provider]
 
-	rootPass, err := helpers.GeneratePassword(64)
-	if err != nil {
-		return nil, err
+	var rootPass string
+	if len(args.Config.Overrides.RootPass) != 0 {
+		rootPass = args.Config.Overrides.RootPass
+	} else {
+		var err error
+		rootPass, err = helpers.GeneratePassword(64)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var jsonData = []byte(
@@ -210,15 +216,12 @@ func (l Linode) connect(_ data.ArgsBundle) error {
 	return nil
 }
 
-func (l Linode) getFailSafeSetup(args data.ArgsBundle) ([]string, error) {
+func (l Linode) failSafeSetup(args data.ArgsBundle) ([]string, error) {
 	commands := []string{
-		l.refreshFailSafeCron(args),
+		fmt.Sprintf(
+			"echo \"$(date +%%M) $(($(($(date +%%H) + %d)) %% 24)) * * * /usr/bin/env curl -H 'Authorization: Bearer %s' -X DELETE https://api.linode.com/v4/linode/instances/%s\" > /etc/crontab",
+			args.Config.Agent.ServerTtlHours, args.Config.Providers["linode"].Key, args.Instance.Id),
+		"crontab /etc/crontab",
 	}
 	return commands, nil
-}
-
-func (l Linode) refreshFailSafeCron(args data.ArgsBundle) string {
-	return fmt.Sprintf(
-		"echo \"$(date +%%M) $(($(($(date +%%H) + %d)) %% 24)) * * * curl -H 'Authorization: Bearer %s' -X DELETE https://api.linode.com/v4/linode/instances/%s\" > /etc/crontab",
-		args.Config.Agent.ServerTtlHours, args.Config.Providers["linode"].Key, args.Instance.Id)
 }

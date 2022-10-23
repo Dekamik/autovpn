@@ -91,7 +91,7 @@ func (p Provider) Connect() error {
 	}
 
 	go helpers.WaitPrint("Installing OpenVPN Server", finish, exited)
-	deleteSetup, err := p.client.getFailSafeSetup(p.args)
+	deleteSetup, err := p.client.failSafeSetup(p.args)
 	ovpnConfig, err := openvpn.Install(*instance, p.args.Config.Agent.ScriptUrl, deleteSetup)
 	finish <- true
 	<-exited
