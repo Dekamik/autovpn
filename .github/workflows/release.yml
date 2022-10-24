@@ -40,7 +40,7 @@ jobs:
         if: ${{ matrix.goos != 'windows' }}
         run: |
           sha256sum autovpn > sha256sums.txt
-          tar --transform 's/.*\///g' -czvf autovpn.tar.gz autovpn README.md LICENSE default.config.yml sha256sums.txt
+          tar -czvf autovpn.tar.gz autovpn README.md LICENSE default.config.yml sha256sums.txt
 
       - name: Upload tarball
         if: ${{ matrix.goos != 'windows' }}
