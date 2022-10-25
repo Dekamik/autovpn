@@ -1,0 +1,75 @@
+@startuml
+
+actor       User    as u
+participant AutoVPN as a
+box "Provider (e.g. Linode)"
+    participant "API/Client" as l
+    participant Server       as s
+end box
+
+== Normal operation ==
+
+group init program
+    u -> a: "autovpn linode eu-central"
+    activate a
+    a -> l: Create server request
+    activate l
+    l -> s: Creates server
+    activate s
+    l --> a: OK
+    deactivate l
+    loop While server is provisioning
+        a -> l: Get server info request
+        activate l
+        l -> s: Check status
+        s --> l: Return status
+        l --> a: Response
+        deactivate l
+    end
+    a -> s: Dial and SSH into server, send OpenVPN install commands and wait
+    s --> a: Commands successful
+    a -> s: Request ovpn config over SFTP
+    s --> a: Download client.ovpn
+    a -> s: Open VPN tunnel
+    s --> a: Tunnel opened
+end
+
+group main loop [tunnel opened]
+    a -> a : Await "CTRL+C" from User
+    a -> s: SSH and update timeout every half hour
+end
+
+group exit program
+    u -> a: "CTRL+C"
+    a -> s: Close tunnel
+    s --> a: OK
+    a -> l: Destroy server request
+    activate l
+    l -> s: Destroys server
+    destroy s
+    l --> a: OK
+    deactivate l
+    a -> a: Delete client.ovpn
+    a --> u: Program finished
+    deactivate a
+end
+
+== Server timeout ==
+
+u -> a: "autovpn linode eu-central"
+activate a
+a <-> s: << Normal operation - main loop >>
+activate s
+u -> a: Closes window
+note right : Tunnel is closed, but server is not destroyed
+destroy a
+... 30 min to 1 hour later ...
+s -> l: Destroy server request
+note right : Cronjob\ntriggers
+activate l
+l --> s: OK
+l -> s: Destroys server
+destroy s
+deactivate l
+
+@enduml

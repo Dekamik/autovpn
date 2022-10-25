@@ -2,9 +2,13 @@
 
 A tool for cheaper VPN connections.
 
-This tool provisions single-session VPN servers at chosen VPS providers. Then it
-automatically connects to the VPN server and destroys the VPN server when you
+This tool provisions single-session VPN servers at a VPS provider. 
+When the VPN server is created, it automatically connects to the VPN server and destroys the VPN server when you 
 disconnect from the session.
+
+![Simplified UML Sequence Diagram](docs/connect_seq_simplified.png)
+
+*&ast; A VPN cannot shield you from all cyber-security risks, please refer to the [FAQ](FAQ.md) for more info*
 
 ## Table of content
 - [1. Setup](#setup)

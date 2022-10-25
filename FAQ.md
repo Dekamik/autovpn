@@ -25,7 +25,7 @@ You have better control over your VPN servers and better oversight over the tech
 stacks behind them. You can choose VPS providers that use secure and updated
 virtualization technology for maximum protection against hackers.
 
-As of 2022-09-01, Linode is the recommended default, since they use KVM for
+As of 2022-10-24, Linode is the recommended default, since they use KVM for
 hardware virtualization, which is up-to-date and has fewer security
 vulnerabilities compared to other vendors virtualization software.
 

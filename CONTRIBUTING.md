@@ -26,3 +26,7 @@ You can add additional providers by following these steps:
 3. Implement all Provider functions. (Check `linode.go` for reference)
 4. Add provider name and struct in `providers.availableProviders`
 5. Add provider to `default.config.yml`
+
+# Program sequence diagram
+
+![Sequence diagram for main functionality](docs/connect_seq.png)
