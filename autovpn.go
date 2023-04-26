@@ -15,10 +15,10 @@ AutoVPN
 Automatically provisions and de-provisions single-use VPN servers for one-shot VPN sessions.
 
 Usage: autovpn <provider> <region>  Provision a VPN server at <provider> on <region> and connects to it
-	   autovpn <provider> zombies   Lists all AutoVPN servers that should be destroyed at provider
+       autovpn <provider> zombies   Lists all AutoVPN servers that should be destroyed at provider
        autovpn <provider> purge     Destroys all AutoVPN servers at provider
        autovpn <provider>           Lists all regions at <provider>
-       
+
        autovpn providers            Lists all available providers
        autovpn zombies              Lists all AutoVPN servers that should be destroyed
        autovpn purge                Destroys all AutoVPN servers at all providers
