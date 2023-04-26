@@ -71,6 +71,9 @@ func (p Provider) Connect() error {
 
 	go helpers.WaitPrint("Creating instance", finish, exited)
 	instance, err := p.client.createServer(p.args)
+	if err != nil {
+		return err
+	}
 	p.args.Instance = *instance
 	finish <- true
 	<-exited

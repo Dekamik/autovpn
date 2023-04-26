@@ -150,7 +150,7 @@ func main() {
 	} else {
 		err = provider.Connect()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 	}
