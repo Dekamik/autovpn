@@ -4,7 +4,6 @@ import (
 	"autovpn/data"
 	"autovpn/providers"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -76,14 +75,14 @@ func main() {
 	} else {
 		exe, err := os.Executable()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		configPath = filepath.Dir(exe) + "/config.yml"
 	}
 
 	config, err := data.ReadConfig(configPath)
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Printf("\n%s", err)
 	}
 
 	if arguments.ShowHelp {
@@ -109,41 +108,41 @@ func main() {
 	if arguments.Purge && len(arguments.Provider) == 0 {
 		err = purgeAll(args)
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 
 	} else if arguments.ListZombies && len(arguments.Provider) == 0 {
 		err = listAllZombies(args)
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 	}
 
 	provider, err := providers.New(arguments.Provider, args)
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Printf("\n%s", err)
 	}
 
 	if arguments.ShowRegions {
 		err = provider.ShowRegions()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 
 	} else if arguments.Purge {
 		err = provider.Purge()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 
 	} else if arguments.ListZombies {
 		err = provider.ListZombies()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 
