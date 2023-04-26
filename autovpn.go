@@ -4,7 +4,6 @@ import (
 	"autovpn/data"
 	"autovpn/providers"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -15,10 +14,10 @@ AutoVPN
 Automatically provisions and de-provisions single-use VPN servers for one-shot VPN sessions.
 
 Usage: autovpn <provider> <region>  Provision a VPN server at <provider> on <region> and connects to it
-	   autovpn <provider> zombies   Lists all AutoVPN servers that should be destroyed at provider
+       autovpn <provider> zombies   Lists all AutoVPN servers that should be destroyed at provider
        autovpn <provider> purge     Destroys all AutoVPN servers at provider
        autovpn <provider>           Lists all regions at <provider>
-       
+
        autovpn providers            Lists all available providers
        autovpn zombies              Lists all AutoVPN servers that should be destroyed
        autovpn purge                Destroys all AutoVPN servers at all providers
@@ -76,14 +75,14 @@ func main() {
 	} else {
 		exe, err := os.Executable()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		configPath = filepath.Dir(exe) + "/config.yml"
 	}
 
 	config, err := data.ReadConfig(configPath)
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Printf("\n%s", err)
 	}
 
 	if arguments.ShowHelp {
@@ -109,48 +108,48 @@ func main() {
 	if arguments.Purge && len(arguments.Provider) == 0 {
 		err = purgeAll(args)
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 
 	} else if arguments.ListZombies && len(arguments.Provider) == 0 {
 		err = listAllZombies(args)
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 	}
 
 	provider, err := providers.New(arguments.Provider, args)
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Printf("\n%s", err)
 	}
 
 	if arguments.ShowRegions {
 		err = provider.ShowRegions()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 
 	} else if arguments.Purge {
 		err = provider.Purge()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 
 	} else if arguments.ListZombies {
 		err = provider.ListZombies()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 
 	} else {
 		err = provider.Connect()
 		if err != nil {
-			log.Fatalln(err)
+			fmt.Printf("\n%s", err)
 		}
 		os.Exit(0)
 	}
