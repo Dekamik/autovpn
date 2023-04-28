@@ -66,16 +66,20 @@ func listAllZombies(args data.ArgsBundle) error {
 }
 
 func main() {
-	arguments := data.ParseArguments(os.Args)
-	var configPath string
+	arguments, err := data.ParseArguments(os.Args)
+	if err != nil {
+		fmt.Printf("\n%s", err)
+		os.Exit(1)
+	}
 
+	var configPath string
 	if arguments.DebugMode {
 		configPath = "./config.yml"
-
 	} else {
 		exe, err := os.Executable()
 		if err != nil {
 			fmt.Printf("\n%s", err)
+			os.Exit(1)
 		}
 		configPath = filepath.Dir(exe) + "/config.yml"
 	}
@@ -83,74 +87,74 @@ func main() {
 	config, err := data.ReadConfig(configPath)
 	if err != nil {
 		fmt.Printf("\n%s", err)
-	}
-
-	if arguments.ShowHelp {
-		fmt.Println(usage)
-		os.Exit(0)
-
-	} else if arguments.ShowVersion {
-		fmt.Println(version)
-		os.Exit(0)
-
-	} else if arguments.ShowProviders {
-		for _, provider := range providers.ListProviders() {
-			fmt.Println(provider)
-		}
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	args := data.ArgsBundle{
 		Config:    *config,
-		Arguments: arguments,
+		Arguments: *arguments,
 	}
 
-	if arguments.Purge && len(arguments.Provider) == 0 {
-		err = purgeAll(args)
+	var provider *providers.Provider
+	if len(arguments.Provider) != 0 {
+		provider, err = providers.New(arguments.Provider, args)
 		if err != nil {
 			fmt.Printf("\n%s", err)
+			os.Exit(1)
 		}
-		os.Exit(0)
-
-	} else if arguments.ListZombies && len(arguments.Provider) == 0 {
-		err = listAllZombies(args)
-		if err != nil {
-			fmt.Printf("\n%s", err)
-		}
-		os.Exit(0)
 	}
 
-	provider, err := providers.New(arguments.Provider, args)
-	if err != nil {
-		fmt.Printf("\n%s", err)
-	}
+	switch arguments.Command {
 
-	if arguments.ShowRegions {
+	case data.ListProviders:
+		for _, provider := range providers.ListProviders() {
+			fmt.Println(provider)
+		}
+
+	case data.ListRegions:
 		err = provider.ShowRegions()
 		if err != nil {
 			fmt.Printf("\n%s", err)
 		}
-		os.Exit(0)
 
-	} else if arguments.Purge {
-		err = provider.Purge()
-		if err != nil {
-			fmt.Printf("\n%s", err)
+	case data.ListZombies:
+		if provider == nil {
+			err = listAllZombies(args)
+			if err != nil {
+				fmt.Printf("\n%s", err)
+			}
+		} else {
+			err = provider.ListZombies()
+			if err != nil {
+				fmt.Printf("\n%s", err)
+			}
 		}
-		os.Exit(0)
 
-	} else if arguments.ListZombies {
-		err = provider.ListZombies()
-		if err != nil {
-			fmt.Printf("\n%s", err)
+	case data.Purge:
+		if provider == nil {
+			err = purgeAll(args)
+			if err != nil {
+				fmt.Printf("\n%s", err)
+			}
+		} else {
+			err = provider.Purge()
+			if err != nil {
+				fmt.Printf("\n%s", err)
+			}
 		}
-		os.Exit(0)
 
-	} else {
+	case data.Version:
+		fmt.Println(version)
+
+	case data.Usage:
+		fmt.Println(usage)
+
+	default:
 		err = provider.Connect()
 		if err != nil {
 			fmt.Printf("\n%s", err)
 		}
-		os.Exit(0)
 	}
+
+	os.Exit(0)
 }

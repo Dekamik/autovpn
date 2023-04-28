@@ -1,26 +1,34 @@
 package data
 
+import "fmt"
+
+type Command int64
+
+const (
+	Default Command = iota
+	ListProviders
+	ListRegions
+	ListZombies
+	Purge
+
+	Version
+	Usage
+)
+
 type Arguments struct {
-	Provider    string
-	Region      string
-	Purge       bool
-	ListZombies bool
+	Command  Command
+	Provider string
+	Region   string
 
 	DebugMode    bool
 	NoAdminCheck bool
-
-	ShowProviders bool
-	ShowRegions   bool
-
-	ShowHelp    bool
-	ShowVersion bool
 }
 
-func ParseArguments(argv []string) Arguments {
+func ParseArguments(argv []string) (*Arguments, error) {
 	arguments := Arguments{}
 
 	if len(argv) == 1 {
-		return Arguments{ShowHelp: true}
+		return &Arguments{Command: Usage}, nil
 	}
 
 	for _, arg := range argv[1:] {
@@ -28,46 +36,42 @@ func ParseArguments(argv []string) Arguments {
 
 		case "--help":
 		case "-h":
-			arguments.ShowHelp = true
-			break
+			return &Arguments{Command: Usage}, nil
 
 		case "--version":
-			arguments.ShowVersion = true
-			break
+			return &Arguments{Command: Version}, nil
 
 		case "--debug":
 			arguments.DebugMode = true
-			break
 
 		case "--no-admin-check":
 			arguments.NoAdminCheck = true
-			break
 
 		case "providers":
-			arguments.ShowProviders = true
-			break
+			arguments.Command = ListProviders
 
 		case "purge":
-			arguments.Purge = true
-			break
+			arguments.Command = Purge
 
 		case "zombies":
-			arguments.ListZombies = true
-			break
+			arguments.Command = ListZombies
 
 		default:
 			if len(arguments.Provider) == 0 {
 				arguments.Provider = arg
-			} else {
+
+			} else if len(arguments.Region) == 0 {
 				arguments.Region = arg
+
+			} else {
+				return nil, fmt.Errorf("unexpected third argument: %s", arg)
 			}
-			break
 		}
 	}
 
-	if len(arguments.Region) == 0 {
-		arguments.ShowRegions = true
+	if arguments.Command == Default && len(arguments.Region) == 0 {
+		arguments.Command = ListRegions
 	}
 
-	return arguments
+	return &arguments, nil
 }
