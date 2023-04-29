@@ -37,19 +37,19 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Build
-        run: env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X 'main.version=${{ github.event.release.tag_name }}'"
+        run: env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X 'main.version=${{ github.ref_name }}'"
 
       - name: Create tarball
         if: ${{ matrix.goos != 'windows' }}
         run: |
           sha256sum autovpn README.md LICENSE default.config.yml docs/connect_seq_simplified.png > sha256sums.txt
-          tar -czvf autovpn_${{ github.event.release.tag_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz autovpn README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
+          tar -czvf autovpn_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz autovpn README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
 
       - name: Create zipfile
         if: ${{ matrix.goos == 'windows' }}
         run: |
           sha256sum autovpn.exe README.md LICENSE default.config.yml docs/connect_seq_simplified.png > sha256sums.txt
-          zip autovpn_${{ github.event.release.tag_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip autovpn.exe README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
+          zip autovpn_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip autovpn.exe README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -70,7 +70,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          prerelease: contains(github.event.release.tag_name, '-')
+          prerelease: contains(github.ref_name, '-')
           generate_release_notes: true
           files: |
             *.tar.gz
