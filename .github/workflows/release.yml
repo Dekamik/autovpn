@@ -67,10 +67,13 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
 
+      - name: Display structure of downloaded files
+        run: ls -R
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          prerelease: contains(github.ref_name, '-')
+          prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
           files: |
             *.tar.gz
