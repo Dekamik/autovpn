@@ -46,11 +46,13 @@ system and architecture.
 |-----------|---------|----------------|-------|
 | **386**   | ✔️      | ❌              | ✔️    |
 | **amd64** | ✔️      | ✔️             | ✔️    |
-| **arm64** | ❌       | ✔️             | ❌     |
+| **arm**   | ❌       | ❌              | ✔️    |
+| **arm64** | ✔️      | ✔️             | ✔️    |
 
-* 386 = x86, a.k.a. 32-bit computers
+* 386 = x86, a.k.a. most 32-bit computers
 * amd64 = most 64-bit computers
-* arm64 = Apple M-series (M1, M2 etc.)
+* arm = Smartphone and Raspberry Pi
+* arm64 = Smartphone, Raspberry Pi, Apple Silicon (M1, M2 etc.)
 
 ## 4: Unzip archive and configure `config.yml`
 
