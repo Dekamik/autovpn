@@ -65,11 +65,10 @@ func listAllZombies(args data.ArgsBundle) error {
 	return nil
 }
 
-func main() {
+func getArgs() (*data.ArgsBundle, *providers.Provider, error) {
 	arguments, err := data.ParseArguments(os.Args)
 	if err != nil {
-		fmt.Printf("\n%s", err)
-		os.Exit(1)
+		return nil, nil, err
 	}
 
 	var configPath string
@@ -78,16 +77,14 @@ func main() {
 	} else {
 		exe, err := os.Executable()
 		if err != nil {
-			fmt.Printf("\n%s", err)
-			os.Exit(1)
+			return nil, nil, err
 		}
 		configPath = filepath.Dir(exe) + "/config.yml"
 	}
 
 	config, err := data.ReadConfig(configPath)
 	if err != nil {
-		fmt.Printf("\n%s", err)
-		os.Exit(1)
+		return nil, nil, err
 	}
 
 	args := data.ArgsBundle{
@@ -99,12 +96,21 @@ func main() {
 	if len(arguments.Provider) != 0 {
 		provider, err = providers.New(arguments.Provider, args)
 		if err != nil {
-			fmt.Printf("\n%s", err)
-			os.Exit(1)
+			return nil, nil, err
 		}
 	}
 
-	switch arguments.Command {
+	return &args, provider, nil
+}
+
+func main() {
+	args, provider, err := getArgs()
+	if err != nil {
+		fmt.Printf("\n%s", err)
+		os.Exit(1)
+	}
+
+	switch args.Arguments.Command {
 
 	case data.ListProviders:
 		for _, provider := range providers.ListProviders() {
@@ -119,7 +125,7 @@ func main() {
 
 	case data.ListZombies:
 		if provider == nil {
-			err = listAllZombies(args)
+			err = listAllZombies(*args)
 			if err != nil {
 				fmt.Printf("\n%s", err)
 			}
@@ -132,7 +138,7 @@ func main() {
 
 	case data.Purge:
 		if provider == nil {
-			err = purgeAll(args)
+			err = purgeAll(*args)
 			if err != nil {
 				fmt.Printf("\n%s", err)
 			}
