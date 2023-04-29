@@ -1,16 +1,19 @@
 name: Release binaries
 
 on:
-  release:
-    types:
-      - created
+  push:
+    tags:
+      - "*.*.*"
+      - "*.*.*-alpha.*"
+      - "*.*.*-beta.*"
+      - "*.*.*-rc.*"
 
 env:
   GO_VERSION: ^1.19.1
 
 jobs:
-  release:
-    name: Release binaries
+  build:
+    name: Build binaries
     strategy:
       matrix:
         goos: [linux, darwin, windows]
@@ -38,32 +41,36 @@ jobs:
         if: ${{ matrix.goos != 'windows' }}
         run: |
           sha256sum autovpn README.md LICENSE default.config.yml docs/connect_seq_simplified.png > sha256sums.txt
-          tar -czvf autovpn.tar.gz autovpn README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
-
-      - name: Upload tarball
-        if: ${{ matrix.goos != 'windows' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: autovpn.tar.gz
-          asset_name: autovpn_${{ github.event.release.tag_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz
-          asset_content_type: application/gzip
+          tar -czvf autovpn_${{ github.event.release.tag_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz autovpn README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
 
       - name: Create zipfile
         if: ${{ matrix.goos == 'windows' }}
         run: |
           sha256sum autovpn.exe README.md LICENSE default.config.yml docs/connect_seq_simplified.png > sha256sums.txt
-          zip autovpn.zip autovpn.exe README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
+          zip autovpn_${{ github.event.release.tag_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip autovpn.exe README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
 
-      - name: Upload zipfile
-        if: ${{ matrix.goos == 'windows' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: autovpn.zip
-          asset_name: autovpn_${{ github.event.release.tag_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip
-          asset_content_type: application/zip
+          name: ${{ matrix.goos }}_${{ matrix.goarch }}
+          path: |
+            *.tar.gz
+            *.zip
+
+  release:
+    name: Release binaries
+    needs: build
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: contains(github.ref, '-')
+          generate_release_notes: true
+          files: |
+            *.tar.gz
+            *.zip
