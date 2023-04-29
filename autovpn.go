@@ -87,20 +87,20 @@ func getArgs() (*data.ArgsBundle, *providers.Provider, error) {
 		return nil, nil, err
 	}
 
-	args := data.ArgsBundle{
+	args := &data.ArgsBundle{
 		Config:    *config,
 		Arguments: *arguments,
 	}
 
 	var provider *providers.Provider
 	if len(arguments.Provider) != 0 {
-		provider, err = providers.New(arguments.Provider, args)
+		provider, err = providers.New(arguments.Provider, *args)
 		if err != nil {
 			return nil, nil, err
 		}
 	}
 
-	return &args, provider, nil
+	return args, provider, nil
 }
 
 func main() {
