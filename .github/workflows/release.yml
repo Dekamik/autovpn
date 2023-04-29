@@ -76,5 +76,5 @@ jobs:
           prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
           files: |
-            *.tar.gz
-            *.zip
+            artifact/*.tar.gz
+            artifact/*.zip
