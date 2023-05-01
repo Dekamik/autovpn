@@ -4,6 +4,7 @@ import (
 	"autovpn/data"
 	"autovpn/helpers"
 	"autovpn/openvpn"
+	"autovpn/providers/clients"
 	"fmt"
 	"log"
 	"os"
@@ -11,11 +12,13 @@ import (
 )
 
 type ProviderInterface interface {
-	// Connect provisions a new server and connects to it.
+	// Connect provisions a new VPN server and connects to it.
 	Connect() error
 
+	// ListZombies lists all existing AutoVPN servers on the provider.
 	ListZombies() error
 
+	// Purge destroys all AutoVPN servers on the provider.
 	Purge() error
 
 	// ShowRegions downloads available server regions for the provider.
@@ -23,16 +26,17 @@ type ProviderInterface interface {
 }
 
 type Provider struct {
-	client Client
+	name   string
+	client clients.Client
 	args   data.ArgsBundle
 }
 
-func destroyServer(client Client, args data.ArgsBundle) {
+func destroyServer(client clients.Client, args data.ArgsBundle) {
 	finish := make(chan bool)
 	exited := make(chan bool)
 
 	go helpers.WaitPrint("Destroying server", finish, exited)
-	err := client.destroyServer(args)
+	err := client.DestroyServer(args)
 	finish <- true
 	<-exited
 	if err != nil {
@@ -70,7 +74,7 @@ func (p Provider) Connect() error {
 	exited := make(chan bool)
 
 	go helpers.WaitPrint("Creating instance", finish, exited)
-	instance, err := p.client.createServer(p.args)
+	instance, err := p.client.CreateServer(p.args)
 	if err != nil {
 		return err
 	}
@@ -86,7 +90,7 @@ func (p Provider) Connect() error {
 	defer destroyServer(p.client, p.args)
 
 	go helpers.WaitPrint("Starting instance", finish, exited)
-	err = p.client.awaitProvisioning(p.args)
+	err = p.client.AwaitProvisioning(p.args)
 	finish <- true
 	<-exited
 	if err != nil {
@@ -94,7 +98,7 @@ func (p Provider) Connect() error {
 	}
 
 	go helpers.WaitPrint("Installing OpenVPN Server", finish, exited)
-	timeoutSetup, err := p.client.timeoutSetup(p.args)
+	timeoutSetup, err := p.client.TimeoutSetup(p.args)
 	ovpnConfig, err := openvpn.Install(*instance, p.args.Config.Agent.ScriptUrl, timeoutSetup)
 	finish <- true
 	<-exited
@@ -112,51 +116,42 @@ func (p Provider) Connect() error {
 }
 
 func (p Provider) ListZombies() error {
-	instances, err := p.client.getInstances(p.args)
-	providerName := p.args.Arguments.Provider
+	instances, err := p.client.GetInstances(p.args)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("--- %s: %d ---\n", providerName, len(instances))
+	fmt.Printf("--- %s: %d ---\n", p.name, len(instances))
 	for _, instance := range instances {
-		fmt.Printf("%s %s\n", providerName, instance.Id)
+		fmt.Printf("%s %s\n", p.name, instance.Id)
 	}
 
 	return nil
 }
 
 func (p Provider) Purge() error {
-	instances, err := p.client.getInstances(p.args)
-	providerName := p.args.Arguments.Provider
+	instances, err := p.client.GetInstances(p.args)
 	if err != nil {
 		return err
 	}
 
 	var wg sync.WaitGroup
 	for _, instance := range instances {
-		isAutoVPNInstance := false
 		for _, tag := range instance.Tags {
-			if tag == InstanceTag {
-				isAutoVPNInstance = true
+			if tag == clients.InstanceTag {
+				wg.Add(1)
+				go func(instance data.Instance) {
+					log.Printf("Purging %s %s...", p.name, instance.Id)
+					err := p.client.DestroyServer(p.args)
+					if err != nil {
+						log.Fatalf("Purge ERR %s %s: %s", p.name, instance.Id, err.Error())
+					}
+					log.Printf("Purge OK %s %s", p.name, instance.Id)
+					wg.Done()
+				}(instance)
 				break
 			}
 		}
-
-		if !isAutoVPNInstance {
-			continue
-		}
-
-		wg.Add(1)
-		go func(instance data.Instance) {
-			log.Printf("Purging %s %s...", providerName, instance.Id)
-			err := p.client.destroyServer(p.args)
-			if err != nil {
-				log.Fatalf("Purge ERR %s %s: %s", providerName, instance.Id, err.Error())
-			}
-			log.Printf("Purge OK %s %s", providerName, instance.Id)
-			wg.Done()
-		}(instance)
 	}
 
 	wg.Wait()
@@ -164,7 +159,7 @@ func (p Provider) Purge() error {
 }
 
 func (p Provider) ShowRegions() error {
-	regions, err := p.client.getRegions(p.args)
+	regions, err := p.client.GetRegions(p.args)
 	if err != nil {
 		return err
 	}
@@ -177,21 +172,22 @@ func (p Provider) ShowRegions() error {
 }
 
 func New(providerName string, args data.ArgsBundle) (*Provider, error) {
-	client, err := newClient(providerName, args)
+	client, err := clients.New(providerName, args)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Provider{
+		name:   providerName,
 		client: *client,
 		args:   args,
 	}, nil
 }
 
 func ListProviders() []string {
-	list := make([]string, len(availableProviders))
+	list := make([]string, len(clients.AvailableProviders))
 	i := 0
-	for name := range availableProviders {
+	for name := range clients.AvailableProviders {
 		list[i] = name
 		i++
 	}

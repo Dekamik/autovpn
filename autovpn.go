@@ -35,6 +35,7 @@ Options:
 
 var version = "DEVELOPMENT_BUILD"
 
+// purgeAll destroys all AutoVPN servers on every provider.
 func purgeAll(args data.ArgsBundle) error {
 	for _, providerName := range providers.ListProviders() {
 		provider, err := providers.New(providerName, args)
@@ -50,6 +51,7 @@ func purgeAll(args data.ArgsBundle) error {
 	return nil
 }
 
+// listAllZombies goes through every provider and checks for zombies.
 func listAllZombies(args data.ArgsBundle) error {
 	for _, providerName := range providers.ListProviders() {
 		provider, err := providers.New(providerName, args)
@@ -57,7 +59,7 @@ func listAllZombies(args data.ArgsBundle) error {
 			return err
 		}
 
-		err = provider.Purge()
+		err = provider.ListZombies()
 		if err != nil {
 			return err
 		}
