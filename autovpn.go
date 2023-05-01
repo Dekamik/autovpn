@@ -110,6 +110,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	exitCode := 0
+
 	switch args.Arguments.Command {
 
 	case data.ListProviders:
@@ -121,6 +123,7 @@ func main() {
 		err = provider.ShowRegions()
 		if err != nil {
 			fmt.Printf("\n%s", err)
+			exitCode = 1
 		}
 
 	case data.ListZombies:
@@ -128,11 +131,13 @@ func main() {
 			err = listAllZombies(*args)
 			if err != nil {
 				fmt.Printf("\n%s", err)
+				exitCode = 1
 			}
 		} else {
 			err = provider.ListZombies()
 			if err != nil {
 				fmt.Printf("\n%s", err)
+				exitCode = 1
 			}
 		}
 
@@ -141,11 +146,13 @@ func main() {
 			err = purgeAll(*args)
 			if err != nil {
 				fmt.Printf("\n%s", err)
+				exitCode = 1
 			}
 		} else {
 			err = provider.Purge()
 			if err != nil {
 				fmt.Printf("\n%s", err)
+				exitCode = 1
 			}
 		}
 
@@ -159,8 +166,9 @@ func main() {
 		err = provider.Connect()
 		if err != nil {
 			fmt.Printf("\n%s", err)
+			exitCode = 1
 		}
 	}
 
-	os.Exit(0)
+	os.Exit(exitCode)
 }
