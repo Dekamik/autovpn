@@ -1,4 +1,4 @@
-package providers
+package clients
 
 import (
 	"autovpn/data"
@@ -24,27 +24,27 @@ func getClient(avpnConfig data.Config) (*ec2.Client, error) {
 	return ec2.NewFromConfig(cfg), nil
 }
 
-func (A AWS) getRegions(args data.ArgsBundle) ([]Region, error) {
+func (A AWS) GetRegions(args data.ArgsBundle) ([]Region, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) getInstances(args data.ArgsBundle) ([]data.Instance, error) {
+func (A AWS) GetInstances(args data.ArgsBundle) ([]data.Instance, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) createServer(args data.ArgsBundle) (*data.Instance, error) {
+func (A AWS) CreateServer(args data.ArgsBundle) (*data.Instance, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) awaitProvisioning(args data.ArgsBundle) error {
+func (A AWS) AwaitProvisioning(args data.ArgsBundle) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (A AWS) destroyServer(args data.ArgsBundle) error {
+func (A AWS) DestroyServer(args data.ArgsBundle) error {
 	//TODO implement me
 	panic("implement me")
 }

@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// IsAdmin checks if the program is running with administrative privileges.
+// This is required when using a VPN, since those programs requires higher privileges than usual.
 func IsAdmin() (bool, error) {
 	switch runtime.GOOS {
 	case "windows":

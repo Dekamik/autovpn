@@ -1,4 +1,4 @@
-package providers
+package clients
 
 import (
 	"autovpn/data"
@@ -32,7 +32,7 @@ type listRes struct {
 	Data []instanceRes
 }
 
-func (l Linode) getRegions(args data.ArgsBundle) ([]Region, error) {
+func (l Linode) GetRegions(_ data.ArgsBundle) ([]Region, error) {
 	client := http.Client{}
 	req, err := http.NewRequest(http.MethodGet, "https://api.linode.com/v4/regions", nil)
 	if err != nil {
@@ -63,7 +63,7 @@ func (l Linode) getRegions(args data.ArgsBundle) ([]Region, error) {
 	return regions, nil
 }
 
-func (l Linode) getInstances(args data.ArgsBundle) ([]data.Instance, error) {
+func (l Linode) GetInstances(args data.ArgsBundle) ([]data.Instance, error) {
 	client := http.Client{}
 	conf := args.Config.Providers["linode"]
 
@@ -103,7 +103,7 @@ func (l Linode) getInstances(args data.ArgsBundle) ([]data.Instance, error) {
 	return instances, nil
 }
 
-func (l Linode) createServer(args data.ArgsBundle) (*data.Instance, error) {
+func (l Linode) CreateServer(args data.ArgsBundle) (*data.Instance, error) {
 	client := http.Client{}
 	config := args.Config.Providers[args.Arguments.Provider]
 
@@ -156,7 +156,7 @@ func (l Linode) createServer(args data.ArgsBundle) (*data.Instance, error) {
 	return instance, nil
 }
 
-func (l Linode) awaitProvisioning(args data.ArgsBundle) error {
+func (l Linode) AwaitProvisioning(args data.ArgsBundle) error {
 	token := args.Config.Providers["linode"].Key
 	client := http.Client{}
 
@@ -189,7 +189,7 @@ func (l Linode) awaitProvisioning(args data.ArgsBundle) error {
 	}
 }
 
-func (l Linode) destroyServer(args data.ArgsBundle) error {
+func (l Linode) DestroyServer(args data.ArgsBundle) error {
 	token := args.Config.Providers["linode"].Key
 	client := http.Client{}
 
@@ -211,12 +211,12 @@ func (l Linode) destroyServer(args data.ArgsBundle) error {
 	return nil
 }
 
-func (l Linode) connect(_ data.ArgsBundle) error {
+func (l Linode) Connect(_ data.ArgsBundle) error {
 	// Nothing needs to be done
 	return nil
 }
 
-func (l Linode) timeoutSetup(args data.ArgsBundle) ([]string, error) {
+func (l Linode) TimeoutSetup(args data.ArgsBundle) ([]string, error) {
 	commands := []string{
 		fmt.Sprintf(
 			"echo \"$(date +%%M) $(($(($(date +%%H) + 1)) %% 24)) * * * /usr/bin/env curl -H 'Authorization: Bearer %s' -X DELETE https://api.linode.com/v4/linode/instances/%s\" > /etc/crontab",
