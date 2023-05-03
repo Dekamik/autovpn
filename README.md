@@ -13,7 +13,7 @@ disconnect from the session.
 ## Table of content
 - [1. Setup](#setup)
     - [1.1 Install OpenVPN](#1-install-openvpn)
-    - [1.2 Create an account at Linode](#2-create-an-account-at-linode)
+    - [1.2 Create an account at your chosen provider (currently Linode only)](#2-create-an-account-at-your-chosen-provider-currently-linode-only)
     - [1.3 Download binary](#3-download-binary)
     - [1.4 Unzip archive and run](#4-unzip-archive-and-configure-configyml)
     - [1.5 Run](#5-run)
@@ -31,9 +31,9 @@ the "OpenVPN" CLI tool.
 If you're on Windows, you should find installers etc. here:
 https://openvpn.net/community-downloads/
 
-## 2: Create an account at Linode
+## 2: Create an account at your chosen provider (currently Linode only)
 
-UNDER CONSTRUCTION
+Go to the provider's website, sign up and generate the required API key(s).
 
 ## 3: Download binary
 
