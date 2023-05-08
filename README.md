@@ -97,6 +97,6 @@ Usage: autovpn <provider> <region>  Provision a VPN server at <provider> on <reg
        autovpn [provider] zombies  Lists all AutoVPN servers that should be destroyed. Lists all zombies across all providers if provider is omitted
        autovpn [provider] purge    Destroys all AutoVPN servers at all providers. Destroys all AutoVPN servers at all providers if provider is omitted
        
-       autovpn (-h | --help)        Shows further help and options
-       autovpn --version            Shows version
+       autovpn (-h | --help)  Shows further help and options
+       autovpn --version      Shows version
 ```
