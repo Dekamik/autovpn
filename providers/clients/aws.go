@@ -8,9 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 )
 
-type AWS struct {
-	Client
-}
+var _ Client = &AWS{}
+
+type AWS struct{}
 
 type AWSOptions struct {
 }
@@ -45,6 +45,16 @@ func (A AWS) AwaitProvisioning(args data.ArgsBundle) error {
 }
 
 func (A AWS) DestroyServer(args data.ArgsBundle) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (A AWS) Connect(args data.ArgsBundle) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (A AWS) TimeoutSetup(args data.ArgsBundle) ([]string, error) {
 	//TODO implement me
 	panic("implement me")
 }

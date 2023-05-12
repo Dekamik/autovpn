@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
-type Linode struct {
-	Client
-}
+var _ Client = &Linode{}
+
+type Linode struct{}
 
 type regionRes struct {
 	Data []struct {
