@@ -11,7 +11,6 @@ const (
 // AvailableProviders contains all available provider names and their corresponding clients.
 // Add implemented providers here.
 var AvailableProviders = map[string]Client{
-	//"aws":    AWS{}, TODO: Uncomment
 	"linode": Linode{},
 }
 
