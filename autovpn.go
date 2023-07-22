@@ -29,8 +29,7 @@ Arguments:
 
 Options:
   -h --help  show this
-  --version  show version
-`
+  --version  show version`
 
 var version = "DEVELOPMENT_BUILD"
 
@@ -107,7 +106,7 @@ func getArgs() (*data.ArgsBundle, *providers.Provider, error) {
 func main() {
 	args, provider, err := getArgs()
 	if err != nil {
-		fmt.Printf("\n%s", err)
+		fmt.Printf("\n%s\n", err)
 		os.Exit(1)
 	}
 
@@ -116,14 +115,14 @@ func main() {
 	switch args.Arguments.Command {
 
 	case data.ListProviders:
-		for _, provider := range providers.ListProviders() {
-			fmt.Println(provider)
+		for _, p := range providers.ListProviders() {
+			fmt.Println(p)
 		}
 
 	case data.ListRegions:
 		err = provider.ShowRegions()
 		if err != nil {
-			fmt.Printf("\n%s", err)
+			fmt.Printf("\n%s\n", err)
 			exitCode = 1
 		}
 
@@ -131,13 +130,13 @@ func main() {
 		if provider == nil {
 			err = listAllZombies(*args)
 			if err != nil {
-				fmt.Printf("\n%s", err)
+				fmt.Printf("\n%s\n", err)
 				exitCode = 1
 			}
 		} else {
 			err = provider.ListZombies()
 			if err != nil {
-				fmt.Printf("\n%s", err)
+				fmt.Printf("\n%s\n", err)
 				exitCode = 1
 			}
 		}
@@ -146,13 +145,13 @@ func main() {
 		if provider == nil {
 			err = purgeAll(*args)
 			if err != nil {
-				fmt.Printf("\n%s", err)
+				fmt.Printf("\n%s\n", err)
 				exitCode = 1
 			}
 		} else {
 			err = provider.Purge()
 			if err != nil {
-				fmt.Printf("\n%s", err)
+				fmt.Printf("\n%s\n", err)
 				exitCode = 1
 			}
 		}
@@ -166,7 +165,7 @@ func main() {
 	default:
 		err = provider.Connect()
 		if err != nil {
-			fmt.Printf("\n%s", err)
+			fmt.Printf("\n%s\n", err)
 			exitCode = 1
 		}
 	}
