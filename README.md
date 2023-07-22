@@ -87,7 +87,7 @@ providers:
 
 # Usage
 
-OpenVPN must be run as administrator/root.
+When connecting to a VPN server, OpenVPN must be run as administrator/root.
 
 ```
 Usage: autovpn <provider> <region>  Provision a VPN server at <provider> on <region> and connects to it
