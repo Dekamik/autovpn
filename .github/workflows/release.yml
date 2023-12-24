@@ -52,7 +52,7 @@ jobs:
           zip autovpn_${{ github.ref_name }}_${{ matrix.goos }}_${{ matrix.goarch }}.zip autovpn.exe README.md LICENSE default.config.yml sha256sums.txt docs/connect_seq_simplified.png
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: |
             *.tar.gz
