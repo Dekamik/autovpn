@@ -1,10 +1,10 @@
 package providers
 
 import (
-	"autovpn/data"
-	"autovpn/helpers"
-	"autovpn/openvpn"
-	"autovpn/providers/clients"
+	"autovpn/internal/data"
+	"autovpn/internal/helpers"
+	"autovpn/internal/openvpn"
+	"autovpn/internal/providers/clients"
 	"fmt"
 	"log"
 	"os"

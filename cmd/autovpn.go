@@ -1,8 +1,8 @@
 package main
 
 import (
-	"autovpn/data"
-	"autovpn/providers"
+	"autovpn/internal/data"
+	"autovpn/internal/providers"
 	"fmt"
 	"os"
 	"path/filepath"

@@ -1,8 +1,8 @@
 package clients
 
 import (
-	"autovpn/data"
-	"autovpn/helpers"
+	"autovpn/internal/data"
+	"autovpn/internal/helpers"
 	"bytes"
 	"encoding/json"
 	"fmt"

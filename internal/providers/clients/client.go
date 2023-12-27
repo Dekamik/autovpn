@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"autovpn/data"
+	"autovpn/internal/data"
 )
 
 const (

@@ -1,7 +1,7 @@
 package openvpn
 
 import (
-	"autovpn/data"
+	"autovpn/internal/data"
 	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
