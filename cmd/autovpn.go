@@ -16,17 +16,21 @@ VPN sessions.
 
 Usage:	autovpn PROVIDER REGION		Provision a VPN server at PROVIDER on
 									REGION and connects to it
+
     	autovpn PROVIDER			Lists all regions at PROVIDER (e.g linode)
+
     	autovpn providers			Lists all available providers
 
     	autovpn PROVIDER zombies	Lists all AutoVPN servers that should be
 									destroyed. Lists all zombies across all
 									providers if provider is omitted
+
     	autovpn PROVIDER purge		Destroys all AutoVPN servers at all
 									providers. Destroys all AutoVPN servers at
 									all providers if provider is omitted
 
     	autovpn (-h | --help)		Shows further help and options
+
     	autovpn --version			Shows version
 
 Arguments:
