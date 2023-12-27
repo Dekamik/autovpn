@@ -11,25 +11,31 @@ import (
 var usage = `
 AutoVPN
 
-Automatically provisions and de-provisions single-use VPN servers for one-shot VPN sessions.
+Automatically provisions and de-provisions single-use VPN servers for one-shot
+VPN sessions.
 
-Usage: autovpn <provider> <region>  Provision a VPN server at <provider> on <region> and connects to it
-       autovpn <provider>           Lists all regions at <provider> (e.g: linode)
-       autovpn providers            Lists all available providers
+Usage:	autovpn PROVIDER REGION		Provision a VPN server at PROVIDER on
+									REGION and connects to it
+    	autovpn PROVIDER			Lists all regions at PROVIDER (e.g linode)
+    	autovpn providers			Lists all available providers
 
-       autovpn [provider] zombies  Lists all AutoVPN servers that should be destroyed. Lists all zombies across all providers if provider is omitted
-       autovpn [provider] purge    Destroys all AutoVPN servers at all providers. Destroys all AutoVPN servers at all providers if provider is omitted
-       
-       autovpn (-h | --help)  Shows further help and options
-       autovpn --version      Shows version
+    	autovpn PROVIDER zombies	Lists all AutoVPN servers that should be
+									destroyed. Lists all zombies across all
+									providers if provider is omitted
+    	autovpn PROVIDER purge		Destroys all AutoVPN servers at all
+									providers. Destroys all AutoVPN servers at
+									all providers if provider is omitted
+
+    	autovpn (-h | --help)		Shows further help and options
+    	autovpn --version			Shows version
 
 Arguments:
-  <provider>  VPS provider to use
-  <region>    VPS provider region on which to create VPN endpoint
+	PROVIDER	VPS provider to use
+	REGION		VPS provider region on which to create the VPN endpoint
 
 Options:
-  -h --help  show this
-  --version  show version`
+	-h --help	show this
+	--version	show version`
 
 var version = "DEVELOPMENT_BUILD"
 
