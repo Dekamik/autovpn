@@ -8,8 +8,6 @@ disconnect from the session.
 
 ![Simplified UML Sequence Diagram](docs/connect_seq_simplified.png)
 
-*&ast; A VPN cannot shield you from all cyber-security risks, please refer to the [FAQ](FAQ.md) for more info*
-
 ## Table of content
 - [1. Setup](#setup)
     - [1.1 Install OpenVPN](#1-install-openvpn)
