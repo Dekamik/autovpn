@@ -1,6 +1,8 @@
 package data
 
-import "fmt"
+import (
+	"flag"
+)
 
 type Command int64
 
@@ -25,53 +27,34 @@ type Arguments struct {
 }
 
 func ParseArguments(argv []string) (*Arguments, error) {
-	arguments := Arguments{}
-
-	if len(argv) == 1 {
+	if *flag.Bool("help", false, "display usage") {
 		return &Arguments{Command: Usage}, nil
 	}
+	if *flag.Bool("version", false, "display version") {
+		return &Arguments{Command: Version}, nil
+	}
 
-	for _, arg := range argv[1:] {
-		switch arg {
+	arguments := Arguments{}
+	arguments.DebugMode = *flag.Bool("debug", false, "run application in debug mode")
+	arguments.NoAdminCheck = *flag.Bool("no-admin-check", false, "run even when not running as a privileged user")
 
-		case "--help":
-		case "-h":
-			return &Arguments{Command: Usage}, nil
-
-		case "--version":
-			return &Arguments{Command: Version}, nil
-
-		case "--debug":
-			arguments.DebugMode = true
-
-		case "--no-admin-check":
-			arguments.NoAdminCheck = true
-
-		case "providers":
-			arguments.Command = ListProviders
-
-		case "purge":
-			arguments.Command = Purge
-
-		case "zombies":
-			arguments.Command = ListZombies
-
-		default:
-			if len(arguments.Provider) == 0 {
-				arguments.Provider = arg
-
-			} else if len(arguments.Region) == 0 {
-				arguments.Region = arg
-
-			} else {
-				return nil, fmt.Errorf("unexpected third argument: %s", arg)
-			}
+	var arg1 = flag.Arg(1)
+	switch arg1 {
+	case "providers":
+		arguments.Command = ListProviders
+	case "purge":
+		arguments.Command = Purge
+	case "zombies":
+		arguments.Command = ListZombies
+	default:
+		if len(arg1) != 0 {
+			arguments.Provider = arg1
+		} else {
+			arguments.Command = ListRegions
 		}
 	}
 
-	if arguments.Command == Default && len(arguments.Region) == 0 {
-		arguments.Command = ListRegions
-	}
+	arguments.Region = flag.Arg(2)
 
 	return &arguments, nil
 }
