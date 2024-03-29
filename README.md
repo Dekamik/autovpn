@@ -2,9 +2,9 @@
 
 A tool for cheaper VPN connections.
 
-This tool provisions single-session VPN servers at a VPS provider. 
-When the VPN server is created, it automatically connects to the VPN server and destroys the VPN server when you 
-disconnect from the session.
+This tool provisions single-session VPN servers at a VPS provider.
+When the VPN server is created, it automatically connects to the VPN server and
+destroys the VPN server when you disconnect from the session.
 
 ![Simplified UML Sequence Diagram](docs/connect_seq_simplified.png)
 
@@ -17,6 +17,7 @@ disconnect from the session.
     - [1.5 Run](#5-run)
 - [2. Configuration](#configuration)
 - [3. Usage](#usage)
+- [4. Build](#build)
 
 # Setup
 
@@ -25,9 +26,8 @@ disconnect from the session.
 OpenVPN is required to connect to the VPN server.
 
 **Note:** This script doesn't support "OpenVPN Connect", you need to install
-the "OpenVPN" CLI tool.
-If you're on Windows, you should find installers etc. here:
-https://openvpn.net/community-downloads/
+the "OpenVPN" CLI tool. If you're on Windows, you should find installers etc.
+here: https://openvpn.net/community-downloads/
 
 ## 2: Create an account at your chosen provider (currently Linode only)
 
@@ -35,8 +35,8 @@ Go to the provider's website, sign up and generate the required API key(s).
 
 ## 3: Download binary
 
-Go to [Releases](https://github.com/Dekamik/autovpn/releases) and download the appropriate binary for your operating
-system and architecture.
+Go to [Releases](https://github.com/Dekamik/autovpn/releases) and download the
+appropriate binary for your operating system and architecture.
 
 ### Binary types:
 
@@ -52,17 +52,24 @@ system and architecture.
 * arm = Smartphone and Raspberry Pi
 * arm64 = Smartphone, Raspberry Pi, Apple Silicon (M1, M2 etc.)
 
-## 4: Unzip archive and configure `config.yml`
+## 4: Unzip archive and configure `.autovpn.yml`
 
-Copy the `default.config.yml` and setup according to [Configuration](#configuration) below.
+Copy the `.example.autovpn.yml` and setup according to [Configuration](#configuration) below.
 
 ## 5: Run
 
-To get started, refer to [Usage](#usage) below, or run `autovpn --help`
+To get started, refer to [Usage](#usage) below, or run `autovpn --help`.
 
 # Configuration
 
-Configuration is done through the `config.yml` file. Here is an example:
+Configuration is done through the `.autovpn.yml` file. The executable will
+first and foremost look for `.autovpn.yml` in the current working directory.
+If not found, it will look for it in `home` next.
+
+If the configuration file is defined using `-c`, that file will override the
+default configuration files.
+
+Here is an example:
 
 `config.yml`
 ```yaml
@@ -88,13 +95,35 @@ providers:
 When connecting to a VPN server, OpenVPN must be run as administrator/root.
 
 ```
-Usage: autovpn <provider> <region>  Provision a VPN server at <provider> on <region> and connects to it
-       autovpn <provider>           Lists all regions at <provider> (e.g: linode)
-       autovpn providers            Lists all available providers
+Usage:	autovpn <provider> <region>	Provision a VPN server at the specified
+									provider on the specified region and then
+									connects to it
 
-       autovpn [provider] zombies  Lists all AutoVPN servers that should be destroyed. Lists all zombies across all providers if provider is omitted
-       autovpn [provider] purge    Destroys all AutoVPN servers at all providers. Destroys all AutoVPN servers at all providers if provider is omitted
-       
-       autovpn (-h | --help)  Shows further help and options
-       autovpn --version      Shows version
+    	autovpn <provider> list		Lists all region slugs at the provider
+
+    	autovpn list				Lists all available providers
+
+    	autovpn <provider> zombies	Lists all AutoVPN servers that should be
+									destroyed at the provider
+
+    	autovpn <provider> purge	Destroys all AutoVPN servers at the 
+									provider
+
+    	autovpn (--help)			Shows further help and options
+
+    	autovpn --version			Shows version
 ```
+
+# Build
+
+To build this executable yourself, you need these prerequisites installed:
+
+- `Go`
+- `Make`
+
+To use make you have to stand in the root directory (where the makefile is).
+
+To build the application run `make`.
+
+To install the build artifact (works only on Linux and macOS), run `make
+install` after running `make`.
