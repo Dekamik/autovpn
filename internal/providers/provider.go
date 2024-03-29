@@ -5,11 +5,16 @@ import (
 	"autovpn/internal/helpers"
 	"autovpn/internal/openvpn"
 	"autovpn/internal/providers/clients"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"sync"
 )
+
+var ErrRootPrivilegesRequired = errors.New("root/administrator privileges required")
+var ErrOpenVPNNotFound = errors.New("could not find OpenVPN client install as defined in config")
 
 type ProviderInterface interface {
 	// Connect provisions a new VPN server and connects to it.
@@ -61,13 +66,14 @@ func (p Provider) Connect() error {
 			return err
 		}
 		if !isAdmin {
-			return fmt.Errorf("Root/Administrator privileges required")
+			return ErrRootPrivilegesRequired
 		}
 	}
 
 	exe := openvpn.GetExecutable(p.args.Config.Overrides.OpenvpnExe)
 	if isInstalled := openvpn.IsInstalled(exe); !isInstalled {
-		return fmt.Errorf("couldn't find OpenVPN exe (%s). OpenVPN must be installed", exe)
+		log.Printf("OpenVPN not found at %s", exe)
+		return ErrOpenVPNNotFound
 	}
 
 	finish := make(chan bool)
@@ -164,8 +170,12 @@ func (p Provider) ShowRegions() error {
 		return err
 	}
 
+	sort.Slice(regions, func(i, j int) bool {
+		return regions[i].Id < regions[j].Id
+	})
+
 	for _, region := range regions {
-		fmt.Printf("%s (%s)\n", region.Id, region.Country)
+		fmt.Printf("%s (%s)\n", region.Id, region.Label)
 	}
 
 	return nil

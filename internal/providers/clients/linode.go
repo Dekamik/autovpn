@@ -16,8 +16,8 @@ type Linode struct{}
 
 type regionRes struct {
 	Data []struct {
-		Id      string
-		Country string
+		Id    string
+		Label string
 	}
 }
 
@@ -57,7 +57,7 @@ func (l Linode) GetRegions(_ data.ArgsBundle) ([]Region, error) {
 
 	regions := make([]Region, len(body.Data))
 	for i, region := range body.Data {
-		regions[i] = Region{Id: region.Id, Country: region.Country}
+		regions[i] = Region{Id: region.Id, Label: region.Label}
 	}
 
 	return regions, nil

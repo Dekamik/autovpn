@@ -1,12 +1,16 @@
 package helpers
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/user"
 	"runtime"
 	"time"
 )
+
+var ErrUnsupportedOS = errors.New("OS is not supported")
 
 // IsAdmin checks if the program is running with administrative privileges.
 // This is required when using a VPN, since those programs requires higher privileges than usual.
@@ -31,7 +35,8 @@ func IsAdmin() (bool, error) {
 		return true, nil
 	}
 
-	return false, fmt.Errorf("%s is not supported", runtime.GOOS)
+	log.Printf("current OS = %s", runtime.GOOS)
+	return false, ErrUnsupportedOS
 }
 
 // WaitPrint is a goroutine that prints the message and prints dots while waiting.

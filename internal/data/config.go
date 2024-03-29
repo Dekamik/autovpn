@@ -1,7 +1,7 @@
 package data
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -31,7 +31,8 @@ func ReadConfig(path string) (*Config, error) {
 	conf := &Config{}
 	err = yaml.Unmarshal(buf, conf)
 	if err != nil {
-		return nil, fmt.Errorf("in file %q: %w", path, err)
+		log.Printf("error when reading config in file %s", path)
+		return nil, err
 	}
 
 	return conf, nil

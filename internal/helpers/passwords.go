@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"crypto/rand"
-	"fmt"
 	"unsafe"
 )
 
@@ -12,7 +11,7 @@ func GeneratePassword(length int) (string, error) {
 	b := make([]byte, length)
 	_, err := rand.Read(b)
 	if err != nil {
-		return "", fmt.Errorf("error occurred when generating password: %w", err)
+		return "", err
 	}
 	for i := 0; i < length; i++ {
 		b[i] = alphanumeric[b[i]%byte(len(alphanumeric))]
