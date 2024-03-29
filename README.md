@@ -21,7 +21,7 @@ destroys the VPN server when you disconnect from the session.
 
 # Setup
 
-## 1: Install OpenVPN
+## 1: Install prerequisites
 
 OpenVPN is required to connect to the VPN server.
 
@@ -29,28 +29,22 @@ OpenVPN is required to connect to the VPN server.
 the "OpenVPN" CLI tool. If you're on Windows, you should find installers etc.
 here: https://openvpn.net/community-downloads/
 
+To build the binary, `Go` and `make` have to be installed. (Make might not be
+available on Windows, and can be omitted).
+
 ## 2: Create an account at your chosen provider (currently Linode only)
 
 Go to the provider's website, sign up and generate the required API key(s).
 
-## 3: Download binary
+## 3: Build and install binary
 
-Go to [Releases](https://github.com/Dekamik/autovpn/releases) and download the
-appropriate binary for your operating system and architecture.
+Build the binary by running `make`, followed by `make install` to install it.
 
-### Binary types:
+NOTE: make may not work on Windows. To build the binary, you need to run the
+following commands: `go mod tidy && go build cmd/main.go`.
 
-|           | Windows | macOS (darwin) | Linux |
-|-----------|---------|----------------|-------|
-| **386**   | ✔️      | ❌              | ✔️    |
-| **amd64** | ✔️      | ✔️             | ✔️    |
-| **arm**   | ❌       | ❌              | ✔️    |
-| **arm64** | ✔️      | ✔️             | ✔️    |
-
-* 386 = x86, a.k.a. most 32-bit computers
-* amd64 = most 64-bit computers
-* arm = Smartphone and Raspberry Pi
-* arm64 = Smartphone, Raspberry Pi, Apple Silicon (M1, M2 etc.)
+Then you have to manually install it on your Windows machine and put it on your
+`PATH`.
 
 ## 4: Unzip archive and configure `.autovpn.yml`
 
@@ -113,17 +107,3 @@ Usage:	autovpn <provider> <region>	Provision a VPN server at the specified
 
     	autovpn --version			Shows version
 ```
-
-# Build
-
-To build this executable yourself, you need these prerequisites installed:
-
-- `Go`
-- `Make`
-
-To use make you have to stand in the root directory (where the makefile is).
-
-To build the application run `make`.
-
-To install the build artifact (works only on Linux and macOS), run `make
-install` after running `make`.
