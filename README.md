@@ -10,10 +10,10 @@ destroys the VPN server when you disconnect from the session.
 
 ## Table of content
 - [1. Setup](#setup)
-    - [1.1 Install OpenVPN](#1-install-openvpn)
+    - [1.1 Install Prerequisites](#1-install-prerequisties)
     - [1.2 Create an account at your chosen provider (currently Linode only)](#2-create-an-account-at-your-chosen-provider-currently-linode-only)
-    - [1.3 Download binary](#3-download-binary)
-    - [1.4 Unzip archive and run](#4-unzip-archive-and-configure-configyml)
+    - [1.3 Build and install binary](#3-build-and-install-binary)
+    - [1.4 Configure .autovpn.yml](#4-configure-autovpnyml)
     - [1.5 Run](#5-run)
 - [2. Configuration](#configuration)
 - [3. Usage](#usage)
@@ -46,7 +46,7 @@ following commands: `go mod tidy && go build cmd/main.go`.
 Then you have to manually install it on your Windows machine and put it on your
 `PATH`.
 
-## 4: Unzip archive and configure `.autovpn.yml`
+## 4: Configure `.autovpn.yml`
 
 Copy the `.example.autovpn.yml` and setup according to [Configuration](#configuration) below.
 
@@ -89,21 +89,21 @@ providers:
 When connecting to a VPN server, OpenVPN must be run as administrator/root.
 
 ```
-Usage:	autovpn <provider> <region>	Provision a VPN server at the specified
-									provider on the specified region and then
-									connects to it
+Usage:	autovpn <provider> <region> Provision a VPN server at the specified
+                                    provider on the specified region and then
+                                    connects to it
 
-    	autovpn <provider> list		Lists all region slugs at the provider
+    	autovpn <provider> list     Lists all region slugs at the provider
 
-    	autovpn list				Lists all available providers
+    	autovpn list                Lists all available providers
 
-    	autovpn <provider> zombies	Lists all AutoVPN servers that should be
-									destroyed at the provider
+    	autovpn <provider> zombies  Lists all AutoVPN servers that should be
+                                    destroyed at the provider
 
-    	autovpn <provider> purge	Destroys all AutoVPN servers at the 
-									provider
+    	autovpn <provider> purge    Destroys all AutoVPN servers at the 
+                                    provider
 
-    	autovpn (--help)			Shows further help and options
+    	autovpn (--help)            Shows further help and options
 
-    	autovpn --version			Shows version
+    	autovpn --version           Shows version
 ```
