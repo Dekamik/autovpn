@@ -40,7 +40,8 @@ type Client interface {
 	// client, if required
 	Connect(args data.ArgsBundle) error
 
-	// TimeoutSetup returns the required bash commands to set up automatic deletion on server
+	// TimeoutSetup returns the required bash commands to set up automatic
+	// deletion on server
 	TimeoutSetup(args data.ArgsBundle) ([]string, error)
 }
 

@@ -10,7 +10,8 @@ import (
 	"time"
 )
 
-// dial recursively redials the instance until a stable SSH connection has been established
+// dial recursively redials the instance until a stable SSH connection has been
+// established
 func dial(network string, addr string, config *ssh.ClientConfig, maxTries int, currentTry int) (*ssh.Client, error) {
 	sshClient, err := ssh.Dial(network, addr, config)
 	if err != nil {
@@ -23,6 +24,8 @@ func dial(network string, addr string, config *ssh.ClientConfig, maxTries int, c
 	return sshClient, nil
 }
 
+// runCommands opens a new SSH session using sshClient and runs each command in
+// commands on the host
 func runCommands(sshClient *ssh.Client, commands []string) error {
 	session, err := sshClient.NewSession()
 	if err != nil {
@@ -56,7 +59,8 @@ func runCommands(sshClient *ssh.Client, commands []string) error {
 	return nil
 }
 
-// Install handles the OpenVPN installation and downloads the resulting VPN-config
+// Install handles the OpenVPN installation and downloads the resulting
+// VPN-config
 func Install(instance data.Instance, installScriptUrl string, setupTimeout []string) (*string, error) {
 	configPath := "client.ovpn"
 	config := &ssh.ClientConfig{
@@ -112,8 +116,8 @@ func Install(instance data.Instance, installScriptUrl string, setupTimeout []str
 	return &configPath, nil
 }
 
-// Connect opens a VPN connection to the instance and listens for the SIGINT or SIGKILL signal.
-// It also refreshes the timeout while the connection is up.
+// Connect opens a VPN connection to the instance and listens for the SIGINT or
+// SIGKILL signal. It also refreshes the timeout while the connection is up.
 func Connect(executable string, ovpnConfig string, setupTimeout []string, instance data.Instance) error {
 	fmt.Println("Connecting...")
 

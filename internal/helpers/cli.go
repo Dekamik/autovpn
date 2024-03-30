@@ -12,8 +12,9 @@ import (
 
 var ErrUnsupportedOS = errors.New("OS is not supported")
 
-// IsAdmin checks if the program is running with administrative privileges.
-// This is required when using a VPN, since those programs requires higher privileges than usual.
+// IsAdmin checks if the program is running with administrative privileges. This
+// is required when using a VPN, since those programs requires higher privileges
+// than usual.
 func IsAdmin() (bool, error) {
 	switch runtime.GOOS {
 	case "windows":
@@ -39,15 +40,16 @@ func IsAdmin() (bool, error) {
 	return false, ErrUnsupportedOS
 }
 
-// WaitPrint is a goroutine that prints the message and prints dots while waiting.
-// It finishes when it receives true in the finish bool channel.
-// To await method completion, simply call <-exited.
-// This command uses VT100 escape codes to erase the line in terminal.
+// WaitPrint is a goroutine that prints the message and prints dots while
+// waiting. It finishes when it receives true in the finish bool channel. To
+// await method completion, simply call <-exited. This command uses VT100 escape
+// codes to erase the line in terminal.
 func WaitPrint(message string, finish chan bool, exited chan bool) {
-	startTime := time.Now().Local()
-	wheel := "-\\|/"
-	i := 0
-	eraseCode := "\u001B[2K\r"
+	var startTime time.Time = time.Now().Local()
+	var eraseCode string = "\u001B[2K\r"
+	var wheel string = "-\\|/"
+	var i int = 0
+
 	for {
 		select {
 		case <-finish:
