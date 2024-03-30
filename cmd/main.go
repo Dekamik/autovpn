@@ -16,36 +16,35 @@ AutoVPN
 Automatically provisions and de-provisions single-use VPN servers for one-shot
 VPN sessions.
 
-Example: autovpn linode se-sto		Provisions a VPN server at Linode's
-									datacenter in Stockholm, Sweden
+Example: autovpn linode se-sto      Provisions a VPN server at Linode's
+                                    datacenter in Stockholm, Sweden
 
-Usage:	autovpn <provider> <region>	Provision a VPN server at the specified
-									provider on the specified region and then
-									connects to it
+Usage:	autovpn <provider> <region> Provision a VPN server at the specified
+                                    provider on the specified region and then
+                                    connects to it
 
-    	autovpn <provider> list		Lists all region slugs at the provider
+    	autovpn <provider> list     Lists all region slugs at the provider
 
-    	autovpn list				Lists all available providers
+    	autovpn list                Lists all available providers
 
-    	autovpn <provider> zombies	Lists all AutoVPN servers that should be
-									destroyed at the provider
+    	autovpn <provider> zombies  Lists all AutoVPN servers that should be
+                                    destroyed at the provider
 
-    	autovpn <provider> purge	Destroys all AutoVPN servers at the 
-									provider
+    	autovpn <provider> purge    Destroys all AutoVPN servers at the provider
 
-    	autovpn (--help)			Shows further help and options
+    	autovpn (--help)            Shows further help and options
 
-    	autovpn --version			Shows version
+    	autovpn --version           Shows version
 
 Arguments:
-	<provider>	VPS provider to use
-	<region>	VPS provider region on which to create the VPN endpoint
+	<provider>  VPS provider to use
+	<region>    VPS provider region on which to create the VPN endpoint
 
 Options:
-	-c <path>	specify a configuration file
+	-c <path>   specify a configuration file
 
-	--help		show this
-	--version	show version`
+	--help      show this
+	--version   show version`
 
 var version = "DEVELOPMENT_BUILD"
 
