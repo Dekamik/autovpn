@@ -56,11 +56,11 @@ func ParseArguments() (*Arguments, error) {
 	var arg1 = flag.Arg(0)
 	var arg2 = flag.Arg(1)
 
-	if *help || arg1 == "" {
-		return &Arguments{Command: Usage}, nil
-	}
 	if *version {
 		return &Arguments{Command: Version}, nil
+	}
+	if *help || arg1 == "" {
+		return &Arguments{Command: Usage}, nil
 	}
 
 	var command Command = Default
