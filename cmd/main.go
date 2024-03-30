@@ -10,6 +10,11 @@ import (
 	"os/user"
 )
 
+var (
+	version string = "DEV"
+	build   string = "BUILD"
+)
+
 var usage = `
 AutoVPN
 
@@ -46,8 +51,6 @@ Options:
 	--help      show this
 	--version   show version`
 
-var version = "DEVELOPMENT_BUILD"
-
 var ErrConfigNotFound = errors.New("config not found")
 
 func setup() (*data.ArgsBundle, *providers.Provider, error) {
@@ -82,7 +85,7 @@ func setup() (*data.ArgsBundle, *providers.Provider, error) {
 			home = u.HomeDir
 		}
 
-		configPaths := []string {
+		configPaths := []string{
 			"./.autovpn.yml",
 			home + "/.autovpn.yml",
 		}
@@ -159,7 +162,7 @@ func main() {
 		}
 
 	case data.Version:
-		fmt.Println(version)
+		fmt.Printf("%s %s\n", version, build)
 
 	case data.Usage:
 		fmt.Println(usage)
