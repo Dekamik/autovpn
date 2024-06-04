@@ -82,17 +82,14 @@ func (p Provider) Connect() error {
 	go helpers.WaitPrint("Creating instance", finish, exited)
 	instance, err := p.client.CreateServer(p.args)
 	if err != nil {
-		return err
-	}
-	p.args.Instance = *instance
-	finish <- true
-	<-exited
-	if err != nil {
 		if instance != nil {
 			destroyServer(p.client, p.args)
 		}
 		return err
 	}
+	p.args.Instance = *instance
+	finish <- true
+	<-exited
 	defer destroyServer(p.client, p.args)
 
 	go helpers.WaitPrint("Starting instance", finish, exited)

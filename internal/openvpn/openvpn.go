@@ -143,7 +143,7 @@ func Connect(executable string, ovpnConfig string, setupTimeout []string, instan
 	}()
 
 	fmt.Println("Connected! Press CTRL+C to disconnect")
-	fmt.Printf("Server timeout: approx. %s\n", time.Now().Add(time.Hour))
+	fmt.Printf("Server timeout: ~%s\n", time.Now().Add(time.Hour))
 	lastTimeoutSetup := time.Now()
 
 	for waiting {
@@ -168,7 +168,7 @@ func Connect(executable string, ovpnConfig string, setupTimeout []string, instan
 			}
 
 			lastTimeoutSetup = time.Now()
-			fmt.Printf("Server timeout updated: %s\n", time.Now().Add(time.Hour))
+			fmt.Printf("Server timeout updated: ~%s\n", time.Now().Add(time.Hour))
 		}
 	}
 
