@@ -10,7 +10,8 @@ build:
 	go build -o ${OUT} -ldflags "-X main.version=$(shell cat VERSION) -X main.build=$(shell date +%y%m%d%H%M)" cmd/main.go
 
 install:
-	cp ${OUT} /usr/local/bin
+	mkdir -p /usr/local/bin
+	cp ${OUT} /usr/local/bin/${BIN}
 
 uninstall:
 	rm /usr/local/bin/${BIN}
