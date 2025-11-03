@@ -25,12 +25,13 @@ func IsAdmin() (bool, error) {
 		return true, nil
 
 	case "darwin":
+		fallthrough
 	case "linux":
 		currentUser, err := user.Current()
 		if err != nil {
 			return false, err
 		}
-		if currentUser.Name != "root" {
+		if currentUser.Uid != "0" {
 			return false, nil
 		}
 		return true, nil
